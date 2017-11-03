@@ -1,5 +1,5 @@
-using UnsafeArrays
-using Base.Test
+# This file is a part of UnsafeArrays.jl, licensed under the MIT License (MIT).
 
-# write your own tests here
-@test 1 == 2
+import Compat.Test
+Test.@testset "Package UnsafeArrays" begin
+end
