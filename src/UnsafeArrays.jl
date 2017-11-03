@@ -4,5 +4,7 @@ __precompile__(true)
 
 module UnsafeArrays
 
+include("util.jl")
+include("unsafearray.jl")
 
 end # module
