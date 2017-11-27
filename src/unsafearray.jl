@@ -35,7 +35,17 @@ situations where you have full control over the life cycle of `A` and `U`.
 struct UnsafeArray{T,N} <: DenseArray{T,N}
     pointer::Ptr{T}
     size::NTuple{N,Int}
+
+    function UnsafeArray{T,N}(pointer::Ptr{T}, size::NTuple{N,Int}) where {T,N}
+        if isbits(T)
+            new{T,N}(pointer, size)
+        else
+            throw(ArgumentError("Intended element type $T of UnsafeArray is not a bitstype"))
+        end
+    end
 end
+
+UnsafeArray(pointer::Ptr{T}, size::NTuple{N,Int}) where {T,N} = UnsafeArray{T,N}(pointer, size)
 
 export UnsafeArray
 
