@@ -82,7 +82,7 @@ Base.unsafe_convert(::Type{Ptr{T}}, A::UnsafeArray{T}) where T = A.pointer
 end
 
 
-# From Julia Base:
+# From Julia Base (same implementation, with slight variations):
 
 Base.copy!(dest::Array{T}, src::UnsafeArray{T}) where {T} = copy!(dest, 1, src, 1, length(src))
 
@@ -125,3 +125,26 @@ function Base.unsafe_copy!(dest::UnsafeArray{T}, doffs::Integer, src::Array{T}, 
     end
     return dest
 end
+
+"""
+    @uview A[inds...]
+
+Unsafe view macro. Equivalent to `view A[inds...]`, but returns an
+`UnsafeArray`.
+"""
+macro uview(ex)
+    if Meta.isexpr(ex, :ref)
+        ex = Base.replace_ref_end!(ex)
+        if Meta.isexpr(ex, :ref)
+            ex = Expr(:call, view, UnsafeArray, ex.args...)
+        else # ex replaced by let ...; foo[...]; end
+            assert(Meta.isexpr(ex, :let) && Meta.isexpr(ex.args[2], :ref))
+            ex.args[2] = Expr(:call, view, UnsafeArray, ex.args[2].args...)
+        end
+        Expr(:&&, true, esc(ex))
+    else
+        throw(ArgumentError("Invalid use of @view macro: argument must be a reference expression A[...]."))
+    end
+end
+
+export @uview
