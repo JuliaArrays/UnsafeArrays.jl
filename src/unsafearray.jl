@@ -70,7 +70,7 @@ Base._length(A::UnsafeArray{T,0}) where {T} = 0
 Base.unsafe_convert(::Type{Ptr{T}}, A::UnsafeArray{T}) where T = A.pointer
 
 
-@inline function Base.view(UnsafeArray, A::DenseArray{T,N}, inds::Vararg{SubIdx,N}) where {T,N}
+@inline function uview(A::DenseArray{T,N}, inds::Vararg{SubIdx,N}) where {T,N}
     @boundscheck begin
         checkbounds(A, inds...)
         typeof(indices(A)) == NTuple{N,Base.OneTo{Int}} || throw(ArgumentError("Parent array must have one-based indexing"))
@@ -80,6 +80,8 @@ Base.unsafe_convert(::Type{Ptr{T}}, A::UnsafeArray{T}) where T = A.pointer
     sub_s = _sub_size(size(A), inds...)
     UnsafeArray(p, sub_s)
 end
+
+export uview
 
 
 # From Julia Base (same implementation, with slight variations):
