@@ -70,14 +70,15 @@ Base._length(A::UnsafeArray{T,0}) where {T} = 0
 Base.unsafe_convert(::Type{Ptr{T}}, A::UnsafeArray{T}) where T = A.pointer
 
 
-@inline function uview(A::DenseArray{T,N}, inds::Vararg{SubIdx,N}) where {T,N}
+@inline function uview(A::DenseArray{T,N}, idxs::Vararg{Any,N}) where {T,N}
+    inds = Base.to_indices(A, idxs)
     @boundscheck begin
         checkbounds(A, inds...)
         typeof(indices(A)) == NTuple{N,Base.OneTo{Int}} || throw(ArgumentError("Parent array must have one-based indexing"))
     end
     s = size(A)
-    p = pointer(A, sub2ind(s, _sub_startidx(inds...)...))
-    sub_s = _sub_size(size(A), inds...)
+    p = pointer(A, sub2ind(s, _sub_startidxs(inds...)...))
+    sub_s = _sub_size(inds...)
     UnsafeArray(p, sub_s)
 end
 
