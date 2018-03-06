@@ -4,6 +4,9 @@ __precompile__(true)
 
 module UnsafeArrays
 
+using Compat
+using Compat.Markdown
+
 include("util.jl")
 include("unsafearray.jl")
 

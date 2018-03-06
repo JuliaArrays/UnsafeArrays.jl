@@ -4,7 +4,7 @@ using Base: @propagate_inbounds
 using Base.MultiplicativeInverses: SignedMultiplicativeInverse
 
 
-doc"""
+@doc doc"""
     UnsafeArray{T,N} <: DenseArray{T,N}
 
 An `UnsafeArray` is an bitstype wrapper around a memory pointer and a
@@ -77,7 +77,7 @@ Base.unsafe_convert(::Type{Ptr{T}}, A::UnsafeArray{T}) where T = A.pointer
         typeof(indices(A)) == NTuple{N,Base.OneTo{Int}} || throw(ArgumentError("Parent array must have one-based indexing"))
     end
     s = size(A)
-    p = pointer(A, sub2ind(s, _sub_startidxs(inds...)...))
+    p = pointer(A, LinearIndices(s)[_sub_startidxs(inds...)...])
     sub_s = _sub_size(inds...)
     UnsafeArray(p, sub_s)
 end
@@ -102,7 +102,7 @@ function Base.unsafe_copy!(dest::Array{T}, doffs::Integer, src::UnsafeArray{T}, 
     if isbits(T)
         unsafe_copy!(pointer(dest, doffs), pointer(src, soffs), n)
     else
-        ccall(:jl_array_ptr_copy, Void, (Any, Ptr{Void}, Any, Ptr{Void}, Int),
+        ccall(:jl_array_ptr_copy, Cvoid, (Any, Ptr{Cvoid}, Any, Ptr{Cvoid}, Int),
               dest, pointer(dest, doffs), src, pointer(src, soffs), n)
     end
     return dest
@@ -123,7 +123,7 @@ function Base.unsafe_copy!(dest::UnsafeArray{T}, doffs::Integer, src::Array{T}, 
     if isbits(T)
         unsafe_copy!(pointer(dest, doffs), pointer(src, soffs), n)
     else
-        ccall(:jl_array_ptr_copy, Void, (Any, Ptr{Void}, Any, Ptr{Void}, Int),
+        ccall(:jl_array_ptr_copy, Cvoid, (Any, Ptr{Cvoid}, Any, Ptr{Cvoid}, Int),
               dest, pointer(dest, doffs), src, pointer(src, soffs), n)
     end
     return dest

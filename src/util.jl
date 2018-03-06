@@ -8,7 +8,7 @@ const SubIdx = Union{IdxRange,Integer}
 @inline _sub_size() = ()
 
 @inline _sub_size(i::Integer, inds::SubIdx...) =
-    (_sub_size(inds...)...)
+    (_sub_size(inds...)...,)
 
 @inline _sub_size(r::IdxRange, inds::SubIdx...) =
     (length(r), _sub_size(inds...)...)
