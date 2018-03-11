@@ -3,3 +3,7 @@
 const UnsafeArray{T,N} = Union{DenseUnsafeArray{T,N}}
 
 export UnsafeArray
+
+
+function uview end
+export uview

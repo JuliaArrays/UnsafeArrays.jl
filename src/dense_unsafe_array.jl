@@ -82,7 +82,12 @@ Base.unsafe_convert(::Type{Ptr{T}}, A::DenseUnsafeArray{T}) where T = A.pointer
     DenseUnsafeArray(p, sub_s)
 end
 
-export uview
+@inline function uview(A::DenseArray{T,N}) where {T,N}
+    @boundscheck begin
+        typeof(indices(A)) == NTuple{N,Base.OneTo{Int}} || throw(ArgumentError("Parent array must have one-based indexing"))
+    end
+    DenseUnsafeArray(pointer(A), size(A))
+end
 
 
 # From Julia Base (same implementation, with slight variations):
@@ -142,7 +147,7 @@ macro uview(ex)
             ex = Expr(:call, view, DenseUnsafeArray, ex.args...)
         else # ex replaced by let ...; foo[...]; end
             assert(Meta.isexpr(ex, :let) && Meta.isexpr(ex.args[2], :ref))
-            ex.args[2] = Expr(:call, view, DenseUnsafeArray, ex.args[2].args...)
+            ex.args[2] = Expr(:call, uview, ex.args[2].args...)
         end
         Expr(:&&, true, esc(ex))
     else
