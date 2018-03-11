@@ -8,6 +8,7 @@ using Compat
 using Compat.Markdown
 
 include("util.jl")
-include("unsafearray.jl")
+include("dense_unsafe_array.jl")
+include("unsafe_array.jl")
 
 end # module
