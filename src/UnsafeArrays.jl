@@ -6,6 +6,7 @@ module UnsafeArrays
 
 using Compat
 using Compat.Markdown
+using Compat: axes
 
 include("util.jl")
 include("dense_unsafe_array.jl")

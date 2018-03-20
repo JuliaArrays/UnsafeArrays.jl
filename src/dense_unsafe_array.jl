@@ -24,7 +24,7 @@ Usage as a view:
 
     U = view(DenseUnsafeArray, A::DenseArray, Colon()..., inds::Integer...)
 
-`A` must be an non-strided, column-major array with one-based indices. `inds`
+`A` must be an non-strided, column-major array with one-based indexing. `inds`
 must select a contiguous region in memory: `view(DenseUnsafeArray, A, :, 2:4, 7)`
 is valid, but `view(DenseUnsafeArray, A, :, 7, 2:4)` is not.
 
@@ -74,7 +74,7 @@ Base.unsafe_convert(::Type{Ptr{T}}, A::DenseUnsafeArray{T}) where T = A.pointer
     inds = Base.to_indices(A, idxs)
     @boundscheck begin
         checkbounds(A, inds...)
-        typeof(indices(A)) == NTuple{N,Base.OneTo{Int}} || throw(ArgumentError("Parent array must have one-based indexing"))
+        typeof(axes(A)) == NTuple{N,Base.OneTo{Int}} || throw(ArgumentError("Parent array must have one-based indexing"))
     end
     s = size(A)
     p = pointer(A, LinearIndices(s)[_sub_startidxs(inds...)...])
@@ -85,7 +85,7 @@ end
 
 @inline function uview(A::DenseArray{T,N}) where {T,N}
     @boundscheck begin
-        typeof(indices(A)) == NTuple{N,Base.OneTo{Int}} || throw(ArgumentError("Parent array must have one-based indexing"))
+        typeof(axes(A)) == NTuple{N,Base.OneTo{Int}} || throw(ArgumentError("Parent array must have one-based indexing"))
     end
     DenseUnsafeArray(pointer(A), size(A))
 end
