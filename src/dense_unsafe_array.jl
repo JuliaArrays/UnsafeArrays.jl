@@ -95,6 +95,10 @@ end
     uview(A, idxs...)
 
 
+@inline Base.reshape(A::DenseUnsafeArray{T}, dims::Dims{N}) where {T,N} =
+    DenseUnsafeArray(A.pointer, dims)
+
+
 # From Julia Base (same implementation, with slight variations):
 
 Base.copy!(dest::Array{T}, src::DenseUnsafeArray{T}) where {T} = copy!(dest, 1, src, 1, length(src))
