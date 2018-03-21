@@ -70,36 +70,42 @@ Base._length(A::DenseUnsafeArray{T,0}) where {T} = 0
 Base.unsafe_convert(::Type{Ptr{T}}, A::DenseUnsafeArray{T}) where T = A.pointer
 
 
-@inline function uview(A::DenseArray{T,N}, idxs::Vararg{Any,N}) where {T,N}
-    inds = Base.to_indices(A, idxs)
+@inline function unsafe_uview(A::DenseArray{T,N}, I::Vararg{DenseIdx,N}) where {T,N}
     @boundscheck begin
-        checkbounds(A, inds...)
-        typeof(axes(A)) == NTuple{N,Base.OneTo{Int}} || throw(ArgumentError("Parent array must have one-based indexing"))
+        checkbounds(A, I...)
+        _require_one_based_indexing(A)
     end
     s = size(A)
     IA = axes(A)
-    p = pointer(A, LinearIndices(s)[_sub_startidxs(IA, inds...)...])
-    sub_s = _sub_size(inds...)
+    p = pointer(A, LinearIndices(s)[_sub_startidxs(IA, I...)...])
+    sub_s = _sub_size(I...)
     DenseUnsafeArray(p, sub_s)
 end
 
-
-@inline function uview(A::DenseArray{T,N}) where {T,N}
+@inline function unsafe_uview(A::DenseArray{T,N}, i::DenseIdx) where {T,N}
     @boundscheck begin
-        typeof(axes(A)) == NTuple{N,Base.OneTo{Int}} || throw(ArgumentError("Parent array must have one-based indexing"))
+        checkbounds(A, i)
+        _require_one_based_indexing(A)
     end
+    p = pointer(A, first(i))
+    sub_s = (length(i),)
+    DenseUnsafeArray(p, sub_s)
+end
+
+@inline function unsafe_uview(A::DenseArray{T,N}) where {T,N}
+    @boundscheck _require_one_based_indexing(A)
     DenseUnsafeArray(pointer(A), size(A))
 end
 
 
 Base.@propagate_inbounds Base.view(A::DenseUnsafeArray, I...) =
-    uview(A, I...)
+    unsafe_uview(A, Base.to_indices(A, I)...)
 
-Base.@propagate_inbounds Base.unsafe_view(A::DenseUnsafeArray, I::Union{AbstractArray, Real}...) =
-    uview(A, I...)
+Base.@propagate_inbounds Base.unsafe_view(A::DenseUnsafeArray, I::DenseIdx...) =
+    unsafe_uview(A, I...)
 
 
-@inline Base.reshape(A::DenseUnsafeArray{T}, dims::Dims{N}) where {T,N} =
+@inline Base.reshape(A::DenseUnsafeArray, dims::Dims) =
     DenseUnsafeArray(A.pointer, dims)
 
 
@@ -146,26 +152,3 @@ function Base.unsafe_copy!(dest::DenseUnsafeArray{T}, doffs::Integer, src::Array
     end
     return dest
 end
-
-"""
-    @uview A[inds...]
-
-Unsafe view macro. Equivalent to `view A[inds...]`, but returns an
-`DenseUnsafeArray`.
-"""
-macro uview(ex)
-    if Meta.isexpr(ex, :ref)
-        ex = Base.replace_ref_end!(ex)
-        if Meta.isexpr(ex, :ref)
-            ex = Expr(:call, view, DenseUnsafeArray, ex.args...)
-        else # ex replaced by let ...; foo[...]; end
-            assert(Meta.isexpr(ex, :let) && Meta.isexpr(ex.args[2], :ref))
-            ex.args[2] = Expr(:call, uview, ex.args[2].args...)
-        end
-        Expr(:&&, true, esc(ex))
-    else
-        throw(ArgumentError("Invalid use of @view macro: argument must be a reference expression A[...]."))
-    end
-end
-
-export @uview
