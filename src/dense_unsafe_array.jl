@@ -85,8 +85,8 @@ end
 end
 
 
-@inline Base.reshape(A::DenseUnsafeArray, dims::Dims) =
-    DenseUnsafeArray(A.pointer, dims)
+@inline Base.__reshape(p::Tuple{DenseUnsafeArray,IndexLinear}, dims::Dims) =
+    DenseUnsafeArray(p[1].pointer, dims)
 
 
 # From Julia Base (same implementation, with slight variations):
