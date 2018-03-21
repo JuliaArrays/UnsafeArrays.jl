@@ -14,19 +14,14 @@ returned by `view` or . Use with caution!
 
 Constructors:
 
-    DenseUnsafeArray{T}(pointer::Ptr{T}, size::NTuple{N,Int})
+    DenseUnsafeArray{T,N}(pointer::Ptr{T}, size::NTuple{N,Int}) where {T,N}
+    DenseUnsafeArray(pointer::Ptr{T}, size::NTuple{N,Int}) where {T,N}
+
+DenseUnsafeArray requires `isbits(T) == true`.
 
 Note: It's safe to construct an empty multidimensional `DenseUnsafeArray`:
 
     DenseUnsafeArray(Ptr{Int}(0), (0,...))
-
-Usage as a view:
-
-    U = view(DenseUnsafeArray, A::DenseArray, Colon()..., inds::Integer...)
-
-`A` must be an non-strided, column-major array with one-based indexing. `inds`
-must select a contiguous region in memory: `view(DenseUnsafeArray, A, :, 2:4, 7)`
-is valid, but `view(DenseUnsafeArray, A, :, 7, 2:4)` is not.
 
 Note: You *must* ensure that `A` is not garbage collected or reallocated
 via (e.g.) `resize!`, `sizehint!` etc. while `U` is in use! Use only in
@@ -36,18 +31,17 @@ struct DenseUnsafeArray{T,N} <: DenseArray{T,N}
     pointer::Ptr{T}
     size::NTuple{N,Int}
 
-    function DenseUnsafeArray{T,N}(pointer::Ptr{T}, size::NTuple{N,Int}) where {T,N}
-        if isbits(T)
-            new{T,N}(pointer, size)
-        else
-            throw(ArgumentError("Intended element type $T of DenseUnsafeArray is not a bitstype"))
-        end
-    end
+    DenseUnsafeArray{T,N}(isbits_T::Val{true}, pointer::Ptr{T}, size::NTuple{N,Int}) where {T,N} =
+        new{T,N}(pointer, size)
 end
 
-DenseUnsafeArray(pointer::Ptr{T}, size::NTuple{N,Int}) where {T,N} = DenseUnsafeArray{T,N}(pointer, size)
-
 export DenseUnsafeArray
+
+DenseUnsafeArray{T,N}(pointer::Ptr{T}, size::NTuple{N,Int}) where {T,N} =
+    DenseUnsafeArray{T,N}(Val{isbits(T)}(), pointer, size)
+
+DenseUnsafeArray(pointer::Ptr{T}, size::NTuple{N,Int}) where {T,N} =
+    DenseUnsafeArray{T,N}(pointer, size)
 
 
 Base.size(A::DenseUnsafeArray) = A.size
@@ -144,9 +138,9 @@ end
 Base.@propagate_inbounds unsafe_uview(A::DenseArray{T,N}) where {T,N} =
     _maybe_unsafe_uview(Val{isbits(T)}(), A)
 
-Base.@propagate_inbounds function _maybe_unsafe_uview(::Val{true}, A::DenseArray{T,N}) where {T,N}
+Base.@propagate_inbounds function _maybe_unsafe_uview(isbits_T::Val{true}, A::DenseArray{T,N}) where {T,N}
     @boundscheck _require_one_based_indexing(A)
-    DenseUnsafeArray(pointer(A), size(A))
+    DenseUnsafeArray{T,N}(isbits_T, pointer(A), size(A))
 end
 
-Base.@propagate_inbounds _maybe_unsafe_uview(::Val{false}, A::DenseArray{T,N}) where {T,N} = A
+Base.@propagate_inbounds _maybe_unsafe_uview(isbits_T::Val{false}, A::DenseArray{T,N}) where {T,N} = A
