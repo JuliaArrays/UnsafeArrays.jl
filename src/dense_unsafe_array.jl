@@ -77,7 +77,8 @@ Base.unsafe_convert(::Type{Ptr{T}}, A::DenseUnsafeArray{T}) where T = A.pointer
         typeof(axes(A)) == NTuple{N,Base.OneTo{Int}} || throw(ArgumentError("Parent array must have one-based indexing"))
     end
     s = size(A)
-    p = pointer(A, LinearIndices(s)[_sub_startidxs(inds...)...])
+    IA = axes(A)
+    p = pointer(A, LinearIndices(s)[_sub_startidxs(IA, inds...)...])
     sub_s = _sub_size(inds...)
     DenseUnsafeArray(p, sub_s)
 end
@@ -91,8 +92,11 @@ end
 end
 
 
-@inline Base.view(A::DenseUnsafeArray{T,N}, idxs::Vararg{Any,N}) where {T,N} =
-    uview(A, idxs...)
+Base.@propagate_inbounds Base.view(A::DenseUnsafeArray, I...) =
+    uview(A, I...)
+
+Base.@propagate_inbounds Base.unsafe_view(A::DenseUnsafeArray, I::Union{AbstractArray, Real}...) =
+    uview(A, I...)
 
 
 @inline Base.reshape(A::DenseUnsafeArray{T}, dims::Dims{N}) where {T,N} =
