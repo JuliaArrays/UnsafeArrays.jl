@@ -37,14 +37,25 @@ end
 
 
 @doc doc"""
-    UnsafeArray.unsafe_uview(A::AbstractArray, I::Base.ViewIndex...)
+    UnsafeArray.unsafe_uview(A::AbstractArray, I::Vararg{Base.ViewIndex,N})
+    UnsafeArray.unsafe_uview(A::AbstractArray, i::Base.ViewIndex)
+    UnsafeArray.unsafe_uview(A::AbstractArray)
 
-Add methods to `unsafe_uview` instead of `uview`, for custom array types.
+To support `uview` for custom array types, add methods to `unsafe_uview`
+instead of `uview`.
+
+Implementing `UnsafeArray.unsafe_uview(A::CustomArrayType)` will often
+be sufficient if specialized methods of `Base.unsafe_view` are provided
+for `CustomArrayType`.
 """
 function unsafe_uview end
 
-Base.@propagate_inbounds unsafe_uview(A::AbstractArray{T,N}, I::Vararg{Base.ViewIndex,N}) where {T,N} = view(A, I...)
-Base.@propagate_inbounds unsafe_uview(A::AbstractArray{T,N}, i) where {T,N} = view(A, i::Base.ViewIndex)
+Base.@propagate_inbounds unsafe_uview(A::AbstractArray{T,N}, I::Vararg{Base.ViewIndex,N}) where {T,N} =
+    Base.unsafe_view(unsafe_uview(A), I...)
+
+Base.@propagate_inbounds unsafe_uview(A::AbstractArray{T,N}, i) where {T,N} =
+    Base.unsafe_view(unsafe_uview(A), i::Base.ViewIndex)
+
 Base.@propagate_inbounds unsafe_uview(A::AbstractArray{T,N}) where {T,N} = A
 
 Base.@propagate_inbounds unsafe_uview(A::UnsafeArray{T,N}) where {T,N} = A
