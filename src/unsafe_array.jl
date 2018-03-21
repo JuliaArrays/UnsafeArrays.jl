@@ -23,6 +23,7 @@ export uview
 
 Base.@propagate_inbounds function uview(A::AbstractArray, I...)
     J = Base.to_indices(A, I)
+    @boundscheck checkbounds(A, J...)
     unsafe_uview(A, J...)
 end
 

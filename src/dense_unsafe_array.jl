@@ -64,8 +64,11 @@ Base._length(A::DenseUnsafeArray{T,0}) where {T} = 0
 Base.unsafe_convert(::Type{Ptr{T}}, A::DenseUnsafeArray{T}) where T = A.pointer
 
 
-Base.@propagate_inbounds Base.view(A::DenseUnsafeArray, I...) =
-    Base.unsafe_view(A, Base.to_indices(A, I)...)
+Base.@propagate_inbounds function Base.view(A::DenseUnsafeArray, I...)
+    J = Base.to_indices(A, I)
+    @boundscheck checkbounds(A, J...)
+    Base.unsafe_view(A, J...)
+end
 
 
 Base.@propagate_inbounds Base.unsafe_view(A::DenseUnsafeArray{T,N}, I::Vararg{Base.ViewIndex,N}) where {T,N} =
