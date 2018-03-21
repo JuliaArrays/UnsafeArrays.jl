@@ -20,20 +20,12 @@ function `UnsafeArrays.unsafe_uview`.
 function uview end
 export uview
 
-Base.@propagate_inbounds uview(A::AbstractArray{T}, I...) where {T} =
-    _maybe_uview(Val{isbits(T)}(), A, I...)
-
-Base.@propagate_inbounds uview(A::UnsafeArray) = A
-
-
-Base.@propagate_inbounds _maybe_uview(::Val{false}, A::AbstractArray{T,N}, I::Vararg{Any,N}) where {T,N} = view(A, I...)
-Base.@propagate_inbounds _maybe_uview(::Val{false}, A::AbstractArray{T,N}, i::Any) where {T,N} = view(A, i)
-Base.@propagate_inbounds _maybe_uview(::Val{false}, A::AbstractArray{T,N}) where {T,N} = A
-
-Base.@propagate_inbounds function _maybe_uview(::Val{true}, A::AbstractArray, I...)
+Base.@propagate_inbounds function uview(A::AbstractArray, I...)
     J = Base.to_indices(A, I)
     unsafe_uview(A, J...)
 end
+
+Base.@propagate_inbounds uview(A::UnsafeArray) = A
 
 
 @doc doc"""
@@ -42,11 +34,8 @@ end
     UnsafeArray.unsafe_uview(A::AbstractArray)
 
 To support `uview` for custom array types, add methods to `unsafe_uview`
-instead of `uview`.
-
-Implementing `UnsafeArray.unsafe_uview(A::CustomArrayType)` will often
-be sufficient if specialized methods of `Base.unsafe_view` are provided
-for `CustomArrayType`.
+instead of `uview`. Implementing
+`UnsafeArray.unsafe_uview(A::CustomArrayType)` will often be sufficient.
 """
 function unsafe_uview end
 

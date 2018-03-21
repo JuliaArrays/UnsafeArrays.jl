@@ -71,10 +71,24 @@ Base.unsafe_convert(::Type{Ptr{T}}, A::DenseUnsafeArray{T}) where T = A.pointer
 
 
 Base.@propagate_inbounds Base.view(A::DenseUnsafeArray, I...) =
-    unsafe_uview(A, Base.to_indices(A, I)...)
+    Base.unsafe_view(A, Base.to_indices(A, I)...)
 
-Base.@propagate_inbounds Base.unsafe_view(A::DenseUnsafeArray, I::DenseIdx...) =
-    unsafe_uview(A, I...)
+
+@inline function Base.unsafe_view(A::DenseUnsafeArray{T,N}, I::Vararg{DenseIdx,N}) where {T,N}
+    @boundscheck checkbounds(A, I...)
+    s = size(A)
+    IA = axes(A)
+    p = pointer(A, _fast_sub2ind(s, _sub_startidxs(IA, I...)...))
+    sub_s = _sub_size(I...)
+    DenseUnsafeArray(p, sub_s)
+end
+
+@inline function Base.unsafe_view(A::DenseUnsafeArray{T,N}, i::DenseIdx) where {T,N}
+    @boundscheck checkbounds(A, i)
+    p = pointer(A, first(i))
+    sub_s = (length(i),)
+    DenseUnsafeArray(p, sub_s)
+end
 
 
 @inline Base.reshape(A::DenseUnsafeArray, dims::Dims) =
@@ -127,29 +141,12 @@ end
 
 
 
-@inline function unsafe_uview(A::DenseArray{T,N}, I::Vararg{DenseIdx,N}) where {T,N}
-    @boundscheck begin
-        checkbounds(A, I...)
-        _require_one_based_indexing(A)
-    end
-    s = size(A)
-    IA = axes(A)
-    p = pointer(A, LinearIndices(s)[_sub_startidxs(IA, I...)...])
-    sub_s = _sub_size(I...)
-    DenseUnsafeArray(p, sub_s)
-end
+Base.@propagate_inbounds unsafe_uview(A::DenseArray{T,N}) where {T,N} =
+    _maybe_unsafe_uview(Val{isbits(T)}(), A)
 
-@inline function unsafe_uview(A::DenseArray{T,N}, i::DenseIdx) where {T,N}
-    @boundscheck begin
-        checkbounds(A, i)
-        _require_one_based_indexing(A)
-    end
-    p = pointer(A, first(i))
-    sub_s = (length(i),)
-    DenseUnsafeArray(p, sub_s)
-end
-
-@inline function unsafe_uview(A::DenseArray{T,N}) where {T,N}
+Base.@propagate_inbounds function _maybe_unsafe_uview(::Val{true}, A::DenseArray{T,N}) where {T,N}
     @boundscheck _require_one_based_indexing(A)
     DenseUnsafeArray(pointer(A), size(A))
 end
+
+Base.@propagate_inbounds _maybe_unsafe_uview(::Val{false}, A::DenseArray{T,N}) where {T,N} = A
