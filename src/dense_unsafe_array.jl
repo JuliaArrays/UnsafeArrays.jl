@@ -68,21 +68,41 @@ Base.@propagate_inbounds Base.view(A::DenseUnsafeArray, I...) =
     Base.unsafe_view(A, Base.to_indices(A, I)...)
 
 
-@inline function Base.unsafe_view(A::DenseUnsafeArray{T,N}, I::Vararg{DenseIdx,N}) where {T,N}
-    @boundscheck checkbounds(A, I...)
-    s = size(A)
-    IA = axes(A)
-    p = pointer(A, _fast_sub2ind(s, _sub_startidxs(IA, I...)...))
-    sub_s = _sub_size(I...)
+Base.@propagate_inbounds Base.unsafe_view(A::DenseUnsafeArray{T,N}, I::Vararg{Base.ViewIndex,N}) where {T,N} =
+    _unsafe_view_impl((), A, I...)
+
+Base.@propagate_inbounds Base.unsafe_view(A::DenseUnsafeArray{T,N}, i::Base.ViewIndex) where {T,N} =
+    _unsafe_view_impl((), A, i)
+
+
+@inline function _unsafe_view_impl(IFwd::NTuple{N,Base.Slice}, A::DenseUnsafeArray{T,N}) where {T,N}
+    @assert IFwd == axes(A)
+    A
+end
+
+Base.@propagate_inbounds _unsafe_view_impl(IFwd::NTuple{N,Base.ViewIndex}, A::DenseUnsafeArray{T,N}) where {T,N} =
+    SubArray(A, IFwd)
+
+Base.@propagate_inbounds _unsafe_view_impl(IFwd::NTuple{M,Base.ViewIndex}, A::DenseUnsafeArray{T,N}, i::Base.ViewIndex, I::Base.ViewIndex...) where {T,M,N} =
+    _unsafe_view_impl((IFwd..., i), A, I...)
+
+@inline function _unsafe_view_impl(IFwd::NTuple{M,Base.Slice}, A::DenseUnsafeArray{T,N}, i::DenseIdx, I::Integer...) where {T,M,N}
+    @assert IFwd == ntuple(i -> axes(A)[i], Val{M}())
+    I_all = (IFwd..., i, I...)
+    @boundscheck checkbounds(A, I_all...)
+    startidxs = map(first, (IFwd..., i, I...))
+    sub_s = _sub_size(I_all...)
+    p = pointer(A, _fast_sub2ind(size(A), startidxs...))
     DenseUnsafeArray(p, sub_s)
 end
 
-@inline function Base.unsafe_view(A::DenseUnsafeArray{T,N}, i::DenseIdx) where {T,N}
+@inline function _unsafe_view_impl(IFwd::Tuple{}, A::DenseUnsafeArray{T,N}, i::DenseIdx) where {T,N}
     @boundscheck checkbounds(A, i)
     p = pointer(A, first(i))
     sub_s = (length(i),)
     DenseUnsafeArray(p, sub_s)
 end
+
 
 
 @inline Base.__reshape(p::Tuple{DenseUnsafeArray,IndexLinear}, dims::Dims) =
