@@ -11,8 +11,9 @@ export UnsafeArray
 Unsafe equivalent of `view`. May return an `UnsafeArray`, a standard
 `SubArray` or `A` itself, depending on `I...` and the type of `A`.
 
-As `uview` may return an `UnsafeArray`, `A` itself *must* be protected from
-garbage collection while the view of `A` is in use.
+As `uview` may return an `UnsafeArray`, `A` itself and it's contents *must* be
+protected from garbage collection and memory reallocation while the view of
+`A` is in use.
 
 To provide support for `uview` for custom array types, add methods to
 function `UnsafeArrays.unsafe_uview`.
