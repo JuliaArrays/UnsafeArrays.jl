@@ -12,8 +12,18 @@ Unsafe equivalent of `view`. May return an `UnsafeArray`, a standard
 `SubArray` or `A` itself, depending on `I...` and the type of `A`.
 
 As `uview` may return an `UnsafeArray`, `A` itself and it's contents *must* be
-protected from garbage collection and memory reallocation while the view of
-`A` is in use.
+protected from garbage collection (e.g. via `GC.@preserve` on Julia > v0.6)
+and memory reallocation while the view is in use.
+
+Use `uviews(f::Function, As::AbstractArray...)` to use `uview`s of one or
+multiple arrays with automatically GC protection.
+
+```
+uview(A, B, ...) do (A_u, B_u, ...)
+    # Do something with the unsafe views A_u, B_u, ...
+    # Code here must not resize/append/etc. A, B, ...
+end
+```
 
 To provide support for `uview` for custom array types, add methods to
 function `UnsafeArrays.unsafe_uview`.
@@ -28,6 +38,37 @@ Base.@propagate_inbounds function uview(A::AbstractArray, I...)
 end
 
 Base.@propagate_inbounds uview(A::UnsafeArray) = A
+
+
+@doc doc"""
+    uviews(f::Function, As::AbstractArray...)
+
+Equivalent to `f(map(uview, As)...)`. Automatically protects the array(s)
+`As` from garbage collection during execution of `f`.
+
+Example:
+
+```
+uviews(A, B, ...) do (A_u, B_u, ...)
+    # Do something with the unsafe views A_u, B_u, ...
+    # Code here must not resize/append/etc. A, B, ...
+end
+```
+"""
+function uviews end
+export uviews
+
+@inline function uviews(f::Function, As::AbstractArray...)
+    @static if VERSION >= v"0.7.0-DEV.3465"
+        GC.@preserve(As, f(map(uview, As)...))
+    else
+        try
+            f(map(uview, As)...)
+        finally
+            _noinline_nop(As)
+        end
+    end
+end
 
 
 @doc doc"""

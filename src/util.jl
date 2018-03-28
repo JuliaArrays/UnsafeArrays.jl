@@ -29,3 +29,8 @@ function _require_one_based_indexing(A::AbstractArray{T,N}) where {T,N}
     typeof(axes(A)) == NTuple{N,Base.OneTo{Int}} || throw(ArgumentError("Parent array must have one-based indexing"))
     nothing
 end
+
+
+@noinline function _noinline_nop(x::Tuple)
+    nothing
+end
