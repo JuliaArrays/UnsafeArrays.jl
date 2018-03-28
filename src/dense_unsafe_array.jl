@@ -63,6 +63,8 @@ Base._length(A::DenseUnsafeArray{T,0}) where {T} = 0
 
 Base.unsafe_convert(::Type{Ptr{T}}, A::DenseUnsafeArray{T}) where T = A.pointer
 
+Base.iscontiguous(::DenseUnsafeArray) = true
+
 
 Base.@propagate_inbounds function Base.view(A::DenseUnsafeArray, I...)
     J = Base.to_indices(A, I)
