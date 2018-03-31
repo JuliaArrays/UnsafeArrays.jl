@@ -66,8 +66,10 @@ Base.unsafe_convert(::Type{Ptr{T}}, A::DenseUnsafeArray{T}) where T = A.pointer
 Base.iscontiguous(::DenseUnsafeArray) = true
 
 
-Base.@propagate_inbounds function Base.view(A::DenseUnsafeArray, I...)
-    J = Base.to_indices(A, I)
+Base.@propagate_inbounds Base.view(A::DenseUnsafeArray) = Base.unsafe_view(A)
+
+Base.@propagate_inbounds function Base.view(A::DenseUnsafeArray, idx, I...)
+    J = Base.to_indices(A, (idx, I...))
     @boundscheck checkbounds(A, J...)
     Base.unsafe_view(A, J...)
 end

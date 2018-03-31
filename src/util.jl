@@ -16,7 +16,7 @@ end
 @inline _sub_size(S...) = _sub_size_impl((), S...)
 
 @inline _sub_size_impl(result) =
-    (result...)
+    (result...,)
 
 @inline _sub_size_impl(result, i::Integer, I::DenseIdx...) =
     _sub_size_impl(result, I...)

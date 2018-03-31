@@ -31,11 +31,14 @@ function `UnsafeArrays.unsafe_uview`.
 function uview end
 export uview
 
-Base.@propagate_inbounds function uview(A::AbstractArray, I...)
-    J = Base.to_indices(A, I)
+Base.@propagate_inbounds uview(A::AbstractArray) = unsafe_uview(A)
+
+Base.@propagate_inbounds function uview(A::AbstractArray, idx, I...)
+    J = Base.to_indices(A, (idx, I...))
     @boundscheck checkbounds(A, J...)
     unsafe_uview(A, J...)
 end
+
 
 Base.@propagate_inbounds uview(A::UnsafeArray) = A
 
