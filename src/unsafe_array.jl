@@ -15,8 +15,8 @@ As `uview` may return an `UnsafeArray`, `A` itself and it's contents *must* be
 protected from garbage collection (e.g. via `GC.@preserve` on Julia > v0.6)
 and memory reallocation while the view is in use.
 
-Use `uviews(f::Function, As::AbstractArray...)` to use `uview`s of one or
-multiple arrays with automatically GC protection.
+Use `uviews(f::Function, As::AbstractArray...)` or `@uviews A ... expr` to
+use unsafe views of one or multiple arrays with automatically GC protection.
 
 ```
 uview(A, B, ...) do (A_u, B_u, ...)
@@ -57,6 +57,8 @@ uviews(A, B, ...) do (A_u, B_u, ...)
     # Code here must not resize/append/etc. A, B, ...
 end
 ```
+
+In many cases, it may be preferable to use `@uviews` insted of `views`.
 """
 function uviews end
 export uviews
@@ -97,25 +99,54 @@ Base.@propagate_inbounds unsafe_uview(A::UnsafeArray{T,N}) where {T,N} = A
 
 
 @doc doc"""
-    @uview A[inds...]
+    @uviews A B ... expr
 
-Unsafe equivalent of `@view`. Uses `uview` instead of `view`.
-"""
-macro uview(ex)
-    # From Julia Base (same implementation, but using uview):
+Replace arrays `A`, `B`, ... by uview(`A`), uview(`B`), ... during execution
+of `expr`, while protecting the original arrays from garbage collection.
 
-    if Meta.isexpr(ex, :ref)
-        ex = Base.replace_ref_end!(ex)
-        if Meta.isexpr(ex, :ref)
-            ex = Expr(:call, view, DenseUnsafeArray, ex.args...)
-        else # ex replaced by let ...; foo[...]; end
-            assert(Meta.isexpr(ex, :let) && Meta.isexpr(ex.args[2], :ref))
-            ex.args[2] = Expr(:call, uview, ex.args[2].args...)
-        end
-        Expr(:&&, true, esc(ex))
-    else
-        throw(ArgumentError("Invalid use of @view macro: argument must be a reference expression A[...]."))
+Equivalent to
+
+```
+GC.@preserve A B ... begin
+    let A = uview(A), B = uview(B), ...
+        expr
     end
 end
 
-export @uview
+The unsafe views must not be allowed to escape the scope of `expr`. The
+original arrays must not be resized/appended/etc. during the execution of
+`expr`.
+```
+"""
+macro uviews(args...)
+    syms = args[1:end-1]
+    expr = args[end]
+
+    @static if VERSION >= v"0.7.0-DEV.3465"
+        binds = Expr(:block)
+        for s in syms
+            s isa Symbol || error("@uviews targets must be a symbols")
+            push!(binds.args, :($s = UnsafeArrays.uview($s)))
+        end
+        let_expr = Expr(:let, binds, expr)
+        esc(:(GC.@preserve $(syms...) $(let_expr)))
+    else
+        let_expr = Expr(:let)
+        expr isa Expr || error("Last argument of @uviews must be an expression")
+        push!(let_expr.args, expr)
+        for s in syms
+            s isa Symbol || error("@uviews targets must be a symbols")
+            push!(let_expr.args, :($s = UnsafeArrays.uview($s)))
+        end
+
+        esc(quote
+            try
+                $let_expr
+            finally
+                $(Expr(:call, :(UnsafeArrays._noinline_nop), syms))
+            end
+        end)
+    end
+end
+
+export @uviews
