@@ -58,9 +58,6 @@ end
 
 @inline Base.IndexStyle(A::DenseUnsafeArray) = IndexLinear()
 
-Base.length(A::DenseUnsafeArray{T,0}) where {T} = 0
-Base._length(A::DenseUnsafeArray{T,0}) where {T} = 0
-
 Base.unsafe_convert(::Type{Ptr{T}}, A::DenseUnsafeArray{T}) where T = A.pointer
 
 Base.iscontiguous(::DenseUnsafeArray) = true
