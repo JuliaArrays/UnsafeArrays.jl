@@ -5,7 +5,7 @@ const UnsafeArray{T,N} = Union{DenseUnsafeArray{T,N}}
 export UnsafeArray
 
 
-@doc doc"""
+"""
     uview(A::AbstractArray, I...)
 
 Unsafe equivalent of `view`. May return an `UnsafeArray`, a standard
@@ -43,7 +43,7 @@ end
 Base.@propagate_inbounds uview(A::UnsafeArray) = A
 
 
-@doc doc"""
+"""
     uviews(f::Function, As::AbstractArray...)
 
 Equivalent to `f(map(uview, As)...)`. Automatically protects the array(s)
@@ -76,7 +76,7 @@ export uviews
 end
 
 
-@doc doc"""
+"""
     UnsafeArray.unsafe_uview(A::AbstractArray, I::Vararg{Base.ViewIndex,N})
     UnsafeArray.unsafe_uview(A::AbstractArray, i::Base.ViewIndex)
     UnsafeArray.unsafe_uview(A::AbstractArray)
@@ -98,7 +98,7 @@ Base.@propagate_inbounds unsafe_uview(A::AbstractArray{T,N}) where {T,N} = A
 Base.@propagate_inbounds unsafe_uview(A::UnsafeArray{T,N}) where {T,N} = A
 
 
-@doc doc"""
+"""
     @uviews A B ... expr
 
 Replace arrays `A`, `B`, ... by uview(`A`), uview(`B`), ... during execution

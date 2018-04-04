@@ -5,7 +5,6 @@ __precompile__(true)
 module UnsafeArrays
 
 using Compat
-using Compat.Markdown
 using Compat: axes
 
 include("util.jl")

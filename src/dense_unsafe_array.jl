@@ -4,7 +4,7 @@ using Base: @propagate_inbounds
 using Base.MultiplicativeInverses: SignedMultiplicativeInverse
 
 
-@doc doc"""
+"""
     DenseUnsafeArray{T,N} <: DenseArray{T,N}
 
 An `DenseUnsafeArray` is an bitstype wrapper around a memory pointer and a
