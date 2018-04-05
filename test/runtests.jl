@@ -2,4 +2,5 @@
 
 import Compat.Test
 Test.@testset "Package UnsafeArrays" begin
+    include("util.jl")
 end
