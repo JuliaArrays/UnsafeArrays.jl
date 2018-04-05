@@ -26,6 +26,8 @@ Note: It's safe to construct an empty multidimensional `UnsafeArray`:
 Note: You *must* ensure that `A` is not garbage collected or reallocated
 via (e.g.) `resize!`, `sizehint!` etc. while `U` is in use! Use only in
 situations where you have full control over the life cycle of `A` and `U`.
+
+`deepcopy(::UnsafeArray)` returns a standard `Array`.
 """
 struct UnsafeArray{T,N} <: DenseArray{T,N}
     pointer::Ptr{T}
@@ -157,3 +159,6 @@ function Base.unsafe_copy!(dest::UnsafeArray{T}, doffs::Integer, src::Array{T}, 
     end
     return dest
 end
+
+
+Base.deepcopy(A::UnsafeArray) = copy!(similar(A), A)

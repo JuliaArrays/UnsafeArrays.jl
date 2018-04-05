@@ -47,6 +47,10 @@ Base.@propagate_inbounds uview(A::UnsafeArray) = A
 To support `uview` for custom array types, add methods to `unsafe_uview`
 instead of `uview`. Implementing
 `UnsafeArray.unsafe_uview(A::CustomArrayType)` will often be sufficient.
+
+It may be necessary to provide a custom implementation of `Base.deepcopy`
+for types with a custom implementation of `unsafe_uview`, to ensure that
+the result of `deepcopy` does *NOT* contain unsafe views.
 """
 function unsafe_uview end
 
