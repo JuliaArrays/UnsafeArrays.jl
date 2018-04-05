@@ -15,7 +15,7 @@ Use `uviews(f::Function, As::AbstractArray...)` or `@uviews A ... expr` to
 use unsafe views of one or multiple arrays with automatically GC protection.
 
 ```
-uview(A, B, ...) do (A_u, B_u, ...)
+uviews(A, B, ...) do (A_u, B_u, ...)
     # Do something with the unsafe views A_u, B_u, ...
     # Code here must not resize/append/etc. A, B, ...
 end
