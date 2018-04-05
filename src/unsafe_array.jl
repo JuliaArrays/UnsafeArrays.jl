@@ -61,6 +61,7 @@ end
 Base.unsafe_convert(::Type{Ptr{T}}, A::UnsafeArray{T}) where T = A.pointer
 
 Base.iscontiguous(::UnsafeArray) = true
+Base.iscontiguous(::Type{<:UnsafeArray}) = true
 
 
 Base.@propagate_inbounds Base.view(A::UnsafeArray) = Base.unsafe_view(A)
