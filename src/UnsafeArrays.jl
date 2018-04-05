@@ -8,7 +8,7 @@ using Compat
 using Compat: axes
 
 include("util.jl")
-include("dense_unsafe_array.jl")
 include("unsafe_array.jl")
+include("uview.jl")
 
 end # module
