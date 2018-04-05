@@ -34,3 +34,42 @@ end
 @noinline function _noinline_nop(x::Tuple)
     nothing
 end
+
+
+"""
+    UnsafeArrays.@gc_preserve A B ... expr
+
+Protect `A`, `B`, ... from garbage collection while executing `expr`. Contrary
+to `GC.@preserve`, expr is executed in a new scope.
+
+Equivalent to
+
+```
+GC.@preserve A B ... let
+    expr
+end
+```
+
+On Julia versions that do not provide `GC.@preserve`, a fallback
+implementation is used.
+"""
+macro gc_preserve(args...)
+    syms = args[1:end-1]
+    expr = args[end]
+
+    for s in syms
+        s isa Symbol || error("@gc_preserve targets must be a symbols")
+    end
+
+    @static if VERSION >= v"0.7.0-DEV.3465"
+        esc(:(GC.@preserve $(syms...) $(Expr(:let, Expr(:block), expr))))
+    else
+        esc(quote
+            try
+                $expr
+            finally
+                $(Expr(:call, :(UnsafeArrays._noinline_nop), syms))
+            end
+        end)
+    end
+end

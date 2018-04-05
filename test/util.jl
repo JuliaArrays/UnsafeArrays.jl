@@ -33,4 +33,12 @@ using Compat.Test
         @test @inferred(UnsafeArrays._noinline_nop((rand(3),))) == nothing
         @test @inferred(UnsafeArrays._noinline_nop((rand(3), rand(3, 5)))) == nothing
     end
+
+    @testset "@gc_preserve" begin
+        A = rand(4, 5)
+        s = "foo"
+        @test (UnsafeArrays.@gc_preserve 42) == 42
+        @test (UnsafeArrays.@gc_preserve A size(A)) == (4, 5)
+        @test (UnsafeArrays.@gc_preserve A s (size(A), s)) == ((4, 5), "foo")
+    end
 end
