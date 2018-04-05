@@ -68,12 +68,15 @@ Base.@propagate_inbounds unsafe_uview(A::UnsafeArray{T,N}) where {T,N} = A
 Base.@propagate_inbounds unsafe_uview(A::DenseArray{T,N}) where {T,N} =
     _maybe_unsafe_uview(Val{isbits(T)}(), A)
 
-Base.@propagate_inbounds function _maybe_unsafe_uview(isbits_T::Val{true}, A::DenseArray{T,N}) where {T,N}
+Base.@propagate_inbounds unsafe_uview(A::SubArray{T,N}) where {T,N} =
+    _maybe_unsafe_uview(Val{isbits(T) && Base.iscontiguous(typeof(A))}(), A)
+
+Base.@propagate_inbounds function _maybe_unsafe_uview(unsafe_compatible::Val{true}, A::AbstractArray{T,N}) where {T,N}
     @boundscheck _require_one_based_indexing(A)
-    UnsafeArray{T,N}(isbits_T, pointer(A), size(A))
+    UnsafeArray{T,N}(unsafe_compatible, pointer(A), size(A))
 end
 
-Base.@propagate_inbounds _maybe_unsafe_uview(isbits_T::Val{false}, A::DenseArray{T,N}) where {T,N} = A
+Base.@propagate_inbounds _maybe_unsafe_uview(unsafe_compatible::Val{false}, A::AbstractArray{T,N}) where {T,N} = A
 
 
 """
