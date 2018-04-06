@@ -103,7 +103,7 @@ end
 @inline function _unsafe_view_impl(IFwd::Tuple{}, A::UnsafeArray{T,N}, i::DenseIdx) where {T,N}
     @boundscheck checkbounds(A, i)
     p = pointer(A, first(i))
-    sub_s = (length(i),)
+    sub_s = _sub_size(i)
     UnsafeArray(p, sub_s)
 end
 
