@@ -132,12 +132,8 @@ function Compat.copyto!(dest::Array{T}, doffs::Integer, src::UnsafeArray{T}, sof
 end
 
 function Compat.unsafe_copyto!(dest::Array{T}, doffs::Integer, src::UnsafeArray{T}, soffs::Integer, n::Integer) where {T}
-    if isbits(T)
-        unsafe_copyto!(pointer(dest, doffs), pointer(src, soffs), n)
-    else
-        ccall(:jl_array_ptr_copy, Cvoid, (Any, Ptr{Cvoid}, Any, Ptr{Cvoid}, Int),
-              dest, pointer(dest, doffs), src, pointer(src, soffs), n)
-    end
+    @assert isbits(T)
+    unsafe_copyto!(pointer(dest, doffs), pointer(src, soffs), n)
     return dest
 end
 
@@ -153,12 +149,8 @@ function Compat.copyto!(dest::UnsafeArray{T}, doffs::Integer, src::Array{T}, sof
 end
 
 function Compat.unsafe_copyto!(dest::UnsafeArray{T}, doffs::Integer, src::Array{T}, soffs::Integer, n::Integer) where {T}
-    if isbits(T)
-        unsafe_copyto!(pointer(dest, doffs), pointer(src, soffs), n)
-    else
-        ccall(:jl_array_ptr_copy, Cvoid, (Any, Ptr{Cvoid}, Any, Ptr{Cvoid}, Int),
-              dest, pointer(dest, doffs), src, pointer(src, soffs), n)
-    end
+    @assert isbits(T)
+    unsafe_copyto!(pointer(dest, doffs), pointer(src, soffs), n)
     return dest
 end
 
