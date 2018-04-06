@@ -48,6 +48,8 @@ UnsafeArray(pointer::Ptr{T}, size::NTuple{N,Int}) where {T,N} =
 
 Base.size(A::UnsafeArray) = A.size
 
+Base.elsize(::Type{UnsafeArray{T, N}}) where {T, N} = sizeof(T)
+
 @inline function Base.getindex(A::UnsafeArray, i::Integer)
     @boundscheck checkbounds(A, i)
     unsafe_load(A.pointer, i)
