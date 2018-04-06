@@ -13,16 +13,13 @@ else
 end
 
 
-@inline _sub_size(S...) = _sub_size_impl((), S...)
+# Similar to Base._indices_sub:
+@inline _sub_axes() = ()
+@inline _sub_axes(::Real, I...) = _sub_axes(I...)
+@inline _sub_axes(i1::AbstractArray, I...) = (Base.unsafe_indices(i1)..., _sub_axes(I...)...)
 
-@inline _sub_size_impl(result) =
-    (result...,)
 
-@inline _sub_size_impl(result, i::Integer, I::DenseIdx...) =
-    _sub_size_impl(result, I...)
-
-@inline _sub_size_impl(result, r::IdxUnitRange, I::DenseIdx...) =
-    _sub_size_impl((result..., length(r)), I...)
+@inline _sub_size(sub_idxs...) = map(n->Int(Base.unsafe_length(n)), _sub_axes(sub_idxs...))
 
 
 function _require_one_based_indexing(A::AbstractArray{T,N}) where {T,N}
