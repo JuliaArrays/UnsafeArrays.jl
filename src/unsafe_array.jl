@@ -120,20 +120,20 @@ end
 
 # From Julia Base (same implementation, with slight variations):
 
-Base.copy!(dest::Array{T}, src::UnsafeArray{T}) where {T} = copy!(dest, 1, src, 1, length(src))
+Compat.copyto!(dest::Array{T}, src::UnsafeArray{T}) where {T} = copyto!(dest, 1, src, 1, length(src))
 
-function Base.copy!(dest::Array{T}, doffs::Integer, src::UnsafeArray{T}, soffs::Integer, n::Integer) where {T}
+function Compat.copyto!(dest::Array{T}, doffs::Integer, src::UnsafeArray{T}, soffs::Integer, n::Integer) where {T}
     n == 0 && return dest
     n > 0 || throw(ArgumentError(string("tried to copy n=", n, " elements, but n should be nonnegative")))
     if soffs < 1 || doffs < 1 || soffs+n-1 > length(src) || doffs+n-1 > length(dest)
         throw(BoundsError())
     end
-    unsafe_copy!(dest, doffs, src, soffs, n)
+    unsafe_copyto!(dest, doffs, src, soffs, n)
 end
 
-function Base.unsafe_copy!(dest::Array{T}, doffs::Integer, src::UnsafeArray{T}, soffs::Integer, n::Integer) where {T}
+function Compat.unsafe_copyto!(dest::Array{T}, doffs::Integer, src::UnsafeArray{T}, soffs::Integer, n::Integer) where {T}
     if isbits(T)
-        unsafe_copy!(pointer(dest, doffs), pointer(src, soffs), n)
+        unsafe_copyto!(pointer(dest, doffs), pointer(src, soffs), n)
     else
         ccall(:jl_array_ptr_copy, Cvoid, (Any, Ptr{Cvoid}, Any, Ptr{Cvoid}, Int),
               dest, pointer(dest, doffs), src, pointer(src, soffs), n)
@@ -141,20 +141,20 @@ function Base.unsafe_copy!(dest::Array{T}, doffs::Integer, src::UnsafeArray{T}, 
     return dest
 end
 
-Base.copy!(dest::UnsafeArray{T}, src::Array{T}) where {T} = copy!(dest, 1, src, 1, length(src))
+Compat.copyto!(dest::UnsafeArray{T}, src::Array{T}) where {T} = copyto!(dest, 1, src, 1, length(src))
 
-function Base.copy!(dest::UnsafeArray{T}, doffs::Integer, src::Array{T}, soffs::Integer, n::Integer) where {T}
+function Compat.copyto!(dest::UnsafeArray{T}, doffs::Integer, src::Array{T}, soffs::Integer, n::Integer) where {T}
     n == 0 && return dest
     n > 0 || throw(ArgumentError(string("tried to copy n=", n, " elements, but n should be nonnegative")))
     if soffs < 1 || doffs < 1 || soffs+n-1 > length(src) || doffs+n-1 > length(dest)
         throw(BoundsError())
     end
-    unsafe_copy!(dest, doffs, src, soffs, n)
+    unsafe_copyto!(dest, doffs, src, soffs, n)
 end
 
-function Base.unsafe_copy!(dest::UnsafeArray{T}, doffs::Integer, src::Array{T}, soffs::Integer, n::Integer) where {T}
+function Compat.unsafe_copyto!(dest::UnsafeArray{T}, doffs::Integer, src::Array{T}, soffs::Integer, n::Integer) where {T}
     if isbits(T)
-        unsafe_copy!(pointer(dest, doffs), pointer(src, soffs), n)
+        unsafe_copyto!(pointer(dest, doffs), pointer(src, soffs), n)
     else
         ccall(:jl_array_ptr_copy, Cvoid, (Any, Ptr{Cvoid}, Any, Ptr{Cvoid}, Int),
               dest, pointer(dest, doffs), src, pointer(src, soffs), n)
@@ -163,4 +163,4 @@ function Base.unsafe_copy!(dest::UnsafeArray{T}, doffs::Integer, src::Array{T}, 
 end
 
 
-Base.deepcopy(A::UnsafeArray) = copy!(similar(A), A)
+Base.deepcopy(A::UnsafeArray) = copyto!(similar(A), A)
