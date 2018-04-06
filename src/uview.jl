@@ -123,11 +123,11 @@ GC.@preserve A B ... begin
         expr
     end
 end
+```
 
 The unsafe views must not be allowed to escape the scope of `expr`. The
 original arrays must not be resized/appended/etc. during the execution of
 `expr`.
-```
 """
 macro uviews(args...)
     syms = args[1:end-1]
@@ -143,7 +143,6 @@ macro uviews(args...)
         esc(:(GC.@preserve $(syms...) $(let_expr)))
     else
         let_expr = Expr(:let)
-        expr isa Expr || error("Last argument of @uviews must be an expression")
         push!(let_expr.args, expr)
         for s in syms
             s isa Symbol || error("@uviews targets must be a symbols")
