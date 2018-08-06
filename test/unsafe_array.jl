@@ -61,7 +61,10 @@ using Compat: axes
             T = eltype(UA)
             @test @inferred(length(UA)) == length(A)
             @test @inferred(IndexStyle(UA)) == IndexLinear()
-            @test @inferred(linearindices(UA)) == linearindices(A)
+            @test @inferred(LinearIndices(UA)) == LinearIndices(A)
+            @static if VERSION < v"0.7.0-DEV.3025"
+                @test @inferred(linearindices(UA)) == linearindices(A)
+            end
             @test @inferred(eachindex(UA)) == eachindex(A)
 
             @test @inferred(Base.unsafe_convert(Ptr{T}, UA)) == Base.unsafe_convert(Ptr{T}, A)
