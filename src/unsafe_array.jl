@@ -17,7 +17,7 @@ Constructors:
     UnsafeArray{T,N}(pointer::Ptr{T}, size::NTuple{N,Int}) where {T,N}
     UnsafeArray(pointer::Ptr{T}, size::NTuple{N,Int}) where {T,N}
 
-UnsafeArray requires `isbits(T) == true`.
+UnsafeArray requires `isbitstype(T) == true`.
 
 Note: It's safe to construct an empty multidimensional `UnsafeArray`:
 
@@ -40,7 +40,7 @@ end
 export UnsafeArray
 
 UnsafeArray{T,N}(pointer::Ptr{T}, size::NTuple{N,Int}) where {T,N} =
-    UnsafeArray{T,N}(Val{isbits(T)}(), pointer, size)
+    UnsafeArray{T,N}(Val{isbitstype(T)}(), pointer, size)
 
 UnsafeArray(pointer::Ptr{T}, size::NTuple{N,Int}) where {T,N} =
     UnsafeArray{T,N}(pointer, size)
@@ -132,7 +132,7 @@ function Compat.copyto!(dest::Array{T}, doffs::Integer, src::UnsafeArray{T}, sof
 end
 
 function Compat.unsafe_copyto!(dest::Array{T}, doffs::Integer, src::UnsafeArray{T}, soffs::Integer, n::Integer) where {T}
-    @assert isbits(T)
+    @assert isbitstype(T)
     unsafe_copyto!(pointer(dest, doffs), pointer(src, soffs), n)
     return dest
 end
@@ -149,7 +149,7 @@ function Compat.copyto!(dest::UnsafeArray{T}, doffs::Integer, src::Array{T}, sof
 end
 
 function Compat.unsafe_copyto!(dest::UnsafeArray{T}, doffs::Integer, src::Array{T}, soffs::Integer, n::Integer) where {T}
-    @assert isbits(T)
+    @assert isbitstype(T)
     unsafe_copyto!(pointer(dest, doffs), pointer(src, soffs), n)
     return dest
 end
