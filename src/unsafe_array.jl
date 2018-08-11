@@ -156,3 +156,10 @@ end
 
 
 Base.deepcopy(A::UnsafeArray) = copyto!(similar(A), A)
+
+
+@static if VERSION >= v"0.7.0-DEV.4404"
+    Base.unaliascopy(A::UnsafeArray) = begin
+        copy(A)
+    end
+end
