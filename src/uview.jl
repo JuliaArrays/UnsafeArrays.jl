@@ -163,3 +163,42 @@ macro uviews(args...)
 end
 
 export @uviews
+
+
+@static if VERSION >= v"0.7.0-DEV.4404"
+    function Base.mightalias(A::UnsafeArray, B::UnsafeArray)
+        pfA = pointer(A, firstindex(A))
+        plA = pointer(A, lastindex(A))
+        pfB = pointer(B, firstindex(B))
+        plB = pointer(B, lastindex(B))
+
+        (pfA <= pfB <= plA) || (pfA <= plB <= plA) || (pfB <= pfA <= plB) 
+    end
+
+    function Base.mightalias(A::UnsafeArray, B::AbstractArray)
+        @uviews B begin
+            if typeof(B) <: UnsafeArray
+                Base.mightalias(A, B)
+            else
+                false
+            end
+        end
+    end
+
+    Base.mightalias(A::AbstractArray, B::UnsafeArray) = Base.mightalias(B, A)
+
+    Base.mightalias(A::SubArray{T,N,<:UnsafeArray}, B::AbstractArray) where {T,N} =
+        Base.mightalias(parent(A), B)
+
+    Base.mightalias(A::SubArray{T1,N1,<:UnsafeArray}, B::SubArray{T2,N2,<:UnsafeArray}) where {T1,N1,T2,N2} =
+        Base.mightalias(parent(A), parent(B))
+
+    Base.mightalias(A::SubArray{T,N,<:UnsafeArray}, B::UnsafeArray) where {T,N} =
+        Base.mightalias(parent(A), B)
+
+    Base.mightalias(A::AbstractArray, B::SubArray{T,N,<:UnsafeArray}) where {T,N} =
+        Base.mightalias(B, A)
+
+    Base.mightalias(A::UnsafeArray, B::SubArray{T,N,<:UnsafeArray}) where {T,N} =
+        Base.mightalias(B, A)
+end

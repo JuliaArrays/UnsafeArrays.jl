@@ -109,4 +109,64 @@ using Compat: axes
         @uviews(A, typeof(A)) == UnsafeArray{Int32, 1}
         @uviews(A, B, (typeof(A), typeof(B))) == UnsafeArray{Int32, 1}
     end
+
+
+    @static if VERSION >= v"0.7.0-DEV.4404"
+        @testset "Base.mightalias" begin
+            A = rand(Int32, 10, 15)
+            B = rand(Int32, 12, 17)
+            C = ["foo", "bar", "a", "b", "c", "d", "e"]
+
+            @uviews A B begin
+                @test true == @inferred Base.mightalias(A, A)
+                @test false == @inferred Base.mightalias(A, B)
+
+                @test false == @inferred Base.mightalias(view(A, :, 2:5), view(A, :, 6:10))
+                @test false == @inferred Base.mightalias(view(A, :, 6:10), view(A, :, 2:5))
+
+                @test true == @inferred Base.mightalias(view(A, :, 2:6), view(A, :, 5:10))
+                @test true == @inferred Base.mightalias(view(A, :, 5:10), view(A, :, 2:6))
+                @test true == @inferred Base.mightalias(view(A, :, 2:10), view(A, :, 5:6))
+                @test true == @inferred Base.mightalias(view(A, :, 5:6), view(A, :, 2:10))
+
+                @test false == @inferred Base.mightalias(view(A, :, 2:5), view(A, :, 6:10))
+                @test true == @inferred Base.mightalias(view(A, 2:5, :), view(A, :, 6:10))
+                @test true == @inferred Base.mightalias(view(A, :, 2:5), view(A, 6:10, :))
+                @test true == @inferred Base.mightalias(view(A, 2:5, :), view(A, 6:10, :))
+            end
+
+            @uviews A begin
+                @test false == @inferred Base.mightalias(A, B)
+                @test false == @inferred Base.mightalias(view(A, 2:5, :), B)
+                @test false == @inferred Base.mightalias(A, view(B, :, 2:5))
+                @test false == @inferred Base.mightalias(view(A, 2:5, :), view(B, :, 2:5))
+
+                @test false == @inferred Base.mightalias(B, A)
+                @test false == @inferred Base.mightalias(B, view(A, 2:5, :))
+                @test false == @inferred Base.mightalias(view(B, :, 2:5), A)
+                @test false == @inferred Base.mightalias(view(B, :, 2:5), view(A, 2:5, :))
+            end
+
+
+            @uviews A C begin
+                @test false == @inferred Base.mightalias(A, C)
+
+                @test false == @inferred Base.mightalias(view(A, 2:5, :), C)
+                @test false == @inferred Base.mightalias(A, view(C, 2:5))
+                @test false == @inferred Base.mightalias(view(A, 2:5, :), view(C, 2:5))
+            end
+
+            @uviews A begin
+                @test false == @inferred Base.mightalias(A, C)
+                @test false == @inferred Base.mightalias(view(A, 2:5, :), C)
+                @test false == @inferred Base.mightalias(A, view(C, 2:5))
+                @test false == @inferred Base.mightalias(view(A, 2:5, :), view(C, 2:5))
+
+                @test false == @inferred Base.mightalias(C, A)
+                @test false == @inferred Base.mightalias(C, view(A, 2:5, :))
+                @test false == @inferred Base.mightalias(view(C, 2:5), A)
+                @test false == @inferred Base.mightalias(view(C, 2:5), view(A, 2:5, :))
+            end
+        end
+    end
 end
