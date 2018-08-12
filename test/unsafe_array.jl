@@ -285,19 +285,21 @@ using Compat: axes
     end
 
 
-    @static if VERSION >= v"0.7.0-DEV.4404"
-        @testset "unaliascopy" begin
-            test_A_UA(Float32, Val(3)) do A, UA
-                @test typeof(@inferred(Base.unaliascopy(UA))) == typeof(A)
-                @test Base.unaliascopy(UA) == A
-            end
-
-            test_A_UA(Int16, Val(1)) do A, UA
-                @test typeof(@inferred(Base.unaliascopy(UA))) == typeof(A)
-                @test Base.unaliascopy(UA) == A
-            end
-        end
-    end
+    # # Disabled, as specialization of Base.unaliascopy is disabled:
+    #
+    # @static if VERSION >= v"0.7.0-DEV.4404"
+    #     @testset "unaliascopy" begin
+    #         test_A_UA(Float32, Val(3)) do A, UA
+    #             @test typeof(@inferred(Base.unaliascopy(UA))) == typeof(A)
+    #             @test Base.unaliascopy(UA) == A
+    #         end
+    #
+    #         test_A_UA(Int16, Val(1)) do A, UA
+    #             @test typeof(@inferred(Base.unaliascopy(UA))) == typeof(A)
+    #             @test Base.unaliascopy(UA) == A
+    #         end
+    #     end
+    # end
 
 
     @testset "conversion" begin

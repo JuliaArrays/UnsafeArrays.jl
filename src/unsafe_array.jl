@@ -158,8 +158,12 @@ end
 Base.deepcopy(A::UnsafeArray) = copyto!(similar(A), A)
 
 
-@static if VERSION >= v"0.7.0-DEV.4404"
-    Base.unaliascopy(A::UnsafeArray) = begin
-        copy(A)
-    end
-end
+# # Defining Base.unaliascopy results in very bad broadcast performance for
+# # some reason, even when it shouldn't be called. By default, unaliascopy
+# # results in an error for UnsafeArray.
+#
+# @static if VERSION >= v"1.7.0-DEV.4404"
+#     Base.unaliascopy(A::UnsafeArray) = begin
+#         copy(A)
+#     end
+# end
