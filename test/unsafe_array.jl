@@ -62,9 +62,6 @@ using Compat: axes
             @test @inferred(length(UA)) == length(A)
             @test @inferred(IndexStyle(UA)) == IndexLinear()
             @test @inferred(LinearIndices(UA)) == LinearIndices(A)
-            @static if VERSION < v"0.7.0-DEV.3025"
-                @test @inferred(linearindices(UA)) == linearindices(A)
-            end
             @test @inferred(eachindex(UA)) == eachindex(A)
 
             @test @inferred(Base.unsafe_convert(Ptr{T}, UA)) == Base.unsafe_convert(Ptr{T}, A)
@@ -129,12 +126,9 @@ using Compat: axes
         test_A_UA(Float32, Val(3)) do A, UA
             @test typeof(@inferred(view(UA, :))) == UnsafeArray{Float32,1}
             @test typeof(@inferred(view(UA, :, :, :))) == UnsafeArray{Float32,3}
-            @static if VERSION < v"0.7.0-DEV"
-                @test typeof(@inferred(view(UA, :, 3, :))) <: SubArray
-            else
-                # Inference fails on Julia v0.7, for some reason
-                @test typeof(view(UA, :, 3, :)) <: SubArray
-            end
+            # TODO: Type inference fails for some reason:
+            # @test typeof(@inferred(view(UA, :, 3, :))) <: SubArray
+            @test typeof((view(UA, :, 3, :))) <: SubArray
             @test typeof(@inferred(view(UA, :, :, 3))) == UnsafeArray{Float32,2}
             @test typeof(@inferred(view(UA, :, 2:4, 3))) == UnsafeArray{Float32,2}
             @test typeof(@inferred(view(UA, :, 2, 3))) == UnsafeArray{Float32,1}
@@ -287,17 +281,15 @@ using Compat: axes
 
     # # Disabled, as specialization of Base.unaliascopy is disabled:
     #
-    # @static if VERSION >= v"0.7.0-DEV.4404"
-    #     @testset "unaliascopy" begin
-    #         test_A_UA(Float32, Val(3)) do A, UA
-    #             @test typeof(@inferred(Base.unaliascopy(UA))) == typeof(A)
-    #             @test Base.unaliascopy(UA) == A
-    #         end
+    # @testset "unaliascopy" begin
+    #     test_A_UA(Float32, Val(3)) do A, UA
+    #         @test typeof(@inferred(Base.unaliascopy(UA))) == typeof(A)
+    #         @test Base.unaliascopy(UA) == A
+    #     end
     #
-    #         test_A_UA(Int16, Val(1)) do A, UA
-    #             @test typeof(@inferred(Base.unaliascopy(UA))) == typeof(A)
-    #             @test Base.unaliascopy(UA) == A
-    #         end
+    #     test_A_UA(Int16, Val(1)) do A, UA
+    #         @test typeof(@inferred(Base.unaliascopy(UA))) == typeof(A)
+    #         @test Base.unaliascopy(UA) == A
     #     end
     # end
 

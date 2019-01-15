@@ -100,15 +100,7 @@ function uviews end
 export uviews
 
 @inline function uviews(f::Function, As::AbstractArray...)
-    @static if VERSION >= v"0.7.0-DEV.3465"
-        GC.@preserve(As, f(map(uview, As)...))
-    else
-        try
-            f(map(uview, As)...)
-        finally
-            _noinline_nop(As)
-        end
-    end
+    GC.@preserve(As, f(map(uview, As)...))
 end
 
 
@@ -136,69 +128,50 @@ macro uviews(args...)
     syms = args[1:end-1]
     expr = args[end]
 
-    @static if VERSION >= v"0.7.0-DEV.3465"
-        binds = Expr(:block)
-        for s in syms
-            s isa Symbol || error("@uviews targets must be a symbols")
-            push!(binds.args, :($s = UnsafeArrays.uview($s)))
-        end
-        let_expr = Expr(:let, binds, expr)
-        esc(:(GC.@preserve $(syms...) $(let_expr)))
-    else
-        let_expr = Expr(:let)
-        push!(let_expr.args, expr)
-        for s in syms
-            s isa Symbol || error("@uviews targets must be a symbols")
-            push!(let_expr.args, :($s = UnsafeArrays.uview($s)))
-        end
-
-        esc(quote
-            try
-                $let_expr
-            finally
-                $(Expr(:call, :(UnsafeArrays._noinline_nop), syms))
-            end
-        end)
+    binds = Expr(:block)
+    for s in syms
+        s isa Symbol || error("@uviews targets must be a symbols")
+        push!(binds.args, :($s = UnsafeArrays.uview($s)))
     end
+    let_expr = Expr(:let, binds, expr)
+    esc(:(GC.@preserve $(syms...) $(let_expr)))
 end
 
 export @uviews
 
 
-@static if VERSION >= v"0.7.0-DEV.4404"
-    function Base.mightalias(A::UnsafeArray, B::UnsafeArray)
-        pfA = pointer(A, firstindex(A))
-        plA = pointer(A, lastindex(A))
-        pfB = pointer(B, firstindex(B))
-        plB = pointer(B, lastindex(B))
+function Base.mightalias(A::UnsafeArray, B::UnsafeArray)
+    pfA = pointer(A, firstindex(A))
+    plA = pointer(A, lastindex(A))
+    pfB = pointer(B, firstindex(B))
+    plB = pointer(B, lastindex(B))
 
-        (pfA <= pfB <= plA) || (pfA <= plB <= plA) || (pfB <= pfA <= plB) 
-    end
+    (pfA <= pfB <= plA) || (pfA <= plB <= plA) || (pfB <= pfA <= plB)
+end
 
-    function Base.mightalias(A::UnsafeArray, B::AbstractArray)
-        @uviews B begin
-            if typeof(B) <: UnsafeArray
-                Base.mightalias(A, B)
-            else
-                false
-            end
+function Base.mightalias(A::UnsafeArray, B::AbstractArray)
+    @uviews B begin
+        if typeof(B) <: UnsafeArray
+            Base.mightalias(A, B)
+        else
+            false
         end
     end
-
-    Base.mightalias(A::AbstractArray, B::UnsafeArray) = Base.mightalias(B, A)
-
-    Base.mightalias(A::SubArray{T,N,<:UnsafeArray}, B::AbstractArray) where {T,N} =
-        Base.mightalias(parent(A), B)
-
-    Base.mightalias(A::SubArray{T1,N1,<:UnsafeArray}, B::SubArray{T2,N2,<:UnsafeArray}) where {T1,N1,T2,N2} =
-        Base.mightalias(parent(A), parent(B))
-
-    Base.mightalias(A::SubArray{T,N,<:UnsafeArray}, B::UnsafeArray) where {T,N} =
-        Base.mightalias(parent(A), B)
-
-    Base.mightalias(A::AbstractArray, B::SubArray{T,N,<:UnsafeArray}) where {T,N} =
-        Base.mightalias(B, A)
-
-    Base.mightalias(A::UnsafeArray, B::SubArray{T,N,<:UnsafeArray}) where {T,N} =
-        Base.mightalias(B, A)
 end
+
+Base.mightalias(A::AbstractArray, B::UnsafeArray) = Base.mightalias(B, A)
+
+Base.mightalias(A::SubArray{T,N,<:UnsafeArray}, B::AbstractArray) where {T,N} =
+    Base.mightalias(parent(A), B)
+
+Base.mightalias(A::SubArray{T1,N1,<:UnsafeArray}, B::SubArray{T2,N2,<:UnsafeArray}) where {T1,N1,T2,N2} =
+    Base.mightalias(parent(A), parent(B))
+
+Base.mightalias(A::SubArray{T,N,<:UnsafeArray}, B::UnsafeArray) where {T,N} =
+    Base.mightalias(parent(A), B)
+
+Base.mightalias(A::AbstractArray, B::SubArray{T,N,<:UnsafeArray}) where {T,N} =
+    Base.mightalias(B, A)
+
+Base.mightalias(A::UnsafeArray, B::SubArray{T,N,<:UnsafeArray}) where {T,N} =
+    Base.mightalias(B, A)

@@ -101,7 +101,7 @@ Base.@propagate_inbounds _unsafe_view_impl(IFwd::NTuple{M,Base.ViewIndex}, A::Un
     @boundscheck checkbounds(A, I_all...)
     startidxs = map(first, (IFwd..., i, I...))
     sub_s = _sub_size(I_all...)
-    p = pointer(A, _fast_sub2ind(size(A), startidxs...))
+    p = pointer(A, LinearIndices(size(A))[startidxs...])
     UnsafeArray(p, sub_s)
 end
 
@@ -162,8 +162,6 @@ Base.deepcopy(A::UnsafeArray) = copyto!(similar(A), A)
 # # some reason, even when it shouldn't be called. By default, unaliascopy
 # # results in an error for UnsafeArray.
 #
-# @static if VERSION >= v"1.7.0-DEV.4404"
-#     Base.unaliascopy(A::UnsafeArray) = begin
-#         copy(A)
-#     end
+# Base.unaliascopy(A::UnsafeArray) = begin
+#     copy(A)
 # end

@@ -5,14 +5,6 @@ const IdxUnitRange = AbstractUnitRange{<:Integer}
 const DenseIdx = Union{IdxUnitRange,Integer}
 
 
-@static if VERSION < v"0.7.0-DEV.3025"
-    # LinearIndices(dims...)[I...] is slow on Julia v0.6, use sub2ind instead:
-    Base.@propagate_inbounds _fast_sub2ind(dims::Dims{N}, I::Vararg{Integer,N}) where {N} = sub2ind(dims, I...)
-else
-    Base.@propagate_inbounds _fast_sub2ind(dims::Dims{N}, I::Vararg{Integer,N}) where {N}  = LinearIndices(dims)[I...]
-end
-
-
 # Similar to Base._indices_sub:
 @inline _sub_axes() = ()
 @inline _sub_axes(::Real, I...) = _sub_axes(I...)
@@ -58,15 +50,5 @@ macro gc_preserve(args...)
         s isa Symbol || error("@gc_preserve targets must be a symbols")
     end
 
-    @static if VERSION >= v"0.7.0-DEV.3465"
-        esc(:(GC.@preserve $(syms...) $(Expr(:let, Expr(:block), expr))))
-    else
-        esc(quote
-            try
-                $expr
-            finally
-                $(Expr(:call, :(UnsafeArrays._noinline_nop), syms))
-            end
-        end)
-    end
+    esc(:(GC.@preserve $(syms...) $(Expr(:let, Expr(:block), expr))))
 end
