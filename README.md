@@ -1,6 +1,6 @@
 # UnsafeArrays.jl
 
-[![Build Status](https://travis-ci.org/oschulz/UnsafeArrays.jl.svg?branch=master)](https://travis-ci.org/oschulz/UnsafeArrays.jl)
+[![Build Status](https://travis-ci.com/oschulz/UnsafeArrays.jl.svg?branch=master)](https://travis-ci.com/oschulz/UnsafeArrays.jl)
 [![Build status](https://ci.appveyor.com/api/projects/status/github/oschulz/UnsafeArrays.jl?branch=master&svg=true)](https://ci.appveyor.com/project/oschulz/unsafearrays-jl/branch/master)
 [![codecov](https://codecov.io/gh/oschulz/UnsafeArrays.jl/branch/master/graph/badge.svg)](https://codecov.io/gh/oschulz/UnsafeArrays.jl)
 
