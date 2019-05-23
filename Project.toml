@@ -1,0 +1,15 @@
+name = "UnsafeArrays"
+uuid = "c4a57d5a-5b31-53a6-b365-19f8c011fbd6"
+version = "0.3.0"
+
+[deps]
+
+[compat]
+julia = "1"
+
+[extras]
+Random = "9a3f8284-a2c9-5f02-9a11-845980a1fd5c"
+Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
+
+[targets]
+test = ["Random", "Test"]
