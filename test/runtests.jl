@@ -1,6 +1,7 @@
 # This file is a part of UnsafeArrays.jl, licensed under the MIT License (MIT).
 
-import Compat.Test
+import Test
+
 Test.@testset "Package UnsafeArrays" begin
     include("util.jl")
     include("unsafe_array.jl")

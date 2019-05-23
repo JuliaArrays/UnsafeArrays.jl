@@ -4,9 +4,6 @@ __precompile__(true)
 
 module UnsafeArrays
 
-using Compat
-using Compat: axes
-
 include("util.jl")
 include("unsafe_array.jl")
 include("uview.jl")

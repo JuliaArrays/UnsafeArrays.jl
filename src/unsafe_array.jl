@@ -120,9 +120,9 @@ end
 
 # From Julia Base (same implementation, with slight variations):
 
-Compat.copyto!(dest::Array{T}, src::UnsafeArray{T}) where {T} = copyto!(dest, 1, src, 1, length(src))
+Base.copyto!(dest::Array{T}, src::UnsafeArray{T}) where {T} = copyto!(dest, 1, src, 1, length(src))
 
-function Compat.copyto!(dest::Array{T}, doffs::Integer, src::UnsafeArray{T}, soffs::Integer, n::Integer) where {T}
+function Base.copyto!(dest::Array{T}, doffs::Integer, src::UnsafeArray{T}, soffs::Integer, n::Integer) where {T}
     n == 0 && return dest
     n > 0 || throw(ArgumentError(string("tried to copy n=", n, " elements, but n should be nonnegative")))
     if soffs < 1 || doffs < 1 || soffs+n-1 > length(src) || doffs+n-1 > length(dest)
@@ -131,15 +131,15 @@ function Compat.copyto!(dest::Array{T}, doffs::Integer, src::UnsafeArray{T}, sof
     unsafe_copyto!(dest, doffs, src, soffs, n)
 end
 
-function Compat.unsafe_copyto!(dest::Array{T}, doffs::Integer, src::UnsafeArray{T}, soffs::Integer, n::Integer) where {T}
+function Base.unsafe_copyto!(dest::Array{T}, doffs::Integer, src::UnsafeArray{T}, soffs::Integer, n::Integer) where {T}
     @assert isbitstype(T)
     unsafe_copyto!(pointer(dest, doffs), pointer(src, soffs), n)
     return dest
 end
 
-Compat.copyto!(dest::UnsafeArray{T}, src::Array{T}) where {T} = copyto!(dest, 1, src, 1, length(src))
+Base.copyto!(dest::UnsafeArray{T}, src::Array{T}) where {T} = copyto!(dest, 1, src, 1, length(src))
 
-function Compat.copyto!(dest::UnsafeArray{T}, doffs::Integer, src::Array{T}, soffs::Integer, n::Integer) where {T}
+function Base.copyto!(dest::UnsafeArray{T}, doffs::Integer, src::Array{T}, soffs::Integer, n::Integer) where {T}
     n == 0 && return dest
     n > 0 || throw(ArgumentError(string("tried to copy n=", n, " elements, but n should be nonnegative")))
     if soffs < 1 || doffs < 1 || soffs+n-1 > length(src) || doffs+n-1 > length(dest)
@@ -148,7 +148,7 @@ function Compat.copyto!(dest::UnsafeArray{T}, doffs::Integer, src::Array{T}, sof
     unsafe_copyto!(dest, doffs, src, soffs, n)
 end
 
-function Compat.unsafe_copyto!(dest::UnsafeArray{T}, doffs::Integer, src::Array{T}, soffs::Integer, n::Integer) where {T}
+function Base.unsafe_copyto!(dest::UnsafeArray{T}, doffs::Integer, src::Array{T}, soffs::Integer, n::Integer) where {T}
     @assert isbitstype(T)
     unsafe_copyto!(pointer(dest, doffs), pointer(src, soffs), n)
     return dest

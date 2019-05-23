@@ -19,8 +19,7 @@ decent scalability. UnsafeArrays aims to provide such a solution.
 Example:
 
 ```
-using Compat, Base.Threads, Compat.LinearAlgebra
-using Compat: axes
+using Base.Threads, LinearAlgebra
 
 function colnorms!(dest::AbstractVector, A::AbstractMatrix)
     @threads for i in axes(A, 2)

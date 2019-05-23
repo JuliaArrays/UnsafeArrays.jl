@@ -1,10 +1,9 @@
 # This file is a part of UnsafeArrays.jl, licensed under the MIT License (MIT).
 
 using UnsafeArrays
-using Compat
-using Compat.Test
-using Compat.Random
-using Compat: axes
+using Test
+
+using Random
 
 
 @testset "unsafe_array" begin

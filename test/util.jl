@@ -1,7 +1,7 @@
 # This file is a part of UnsafeArrays.jl, licensed under the MIT License (MIT).
 
 using UnsafeArrays
-using Compat.Test
+using Test
 
 
 @testset "util" begin
