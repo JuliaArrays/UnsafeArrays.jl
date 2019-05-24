@@ -1,6 +1,6 @@
 name = "UnsafeArrays"
 uuid = "c4a57d5a-5b31-53a6-b365-19f8c011fbd6"
-version = "0.3.0"
+version = "0.4.0"
 
 [deps]
 
