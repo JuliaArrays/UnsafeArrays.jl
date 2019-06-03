@@ -165,3 +165,24 @@ Base.deepcopy(A::UnsafeArray) = copyto!(similar(A), A)
 # Base.unaliascopy(A::UnsafeArray) = begin
 #     copy(A)
 # end
+
+
+function Base.reinterpret(::Type{T}, A::UnsafeArray{S,N}) where {T,S,N}
+    isbitstype(T) || throw(ArgumentError("cannot reinterpret `$(S)` `$(T)`, type `$(T)` is not a bits type"))
+
+    if sizeof(S) != sizeof(T)
+        if N == 0
+            throw(ArgumentError("cannot reinterpret a zero-dimensional `$(U)` array to `$(T)` which is of a different size"))
+        else
+            sz = size(A)
+            len1 = sz[1]
+            nbytes = len1*sizeof(S)
+            new_len1 = div(nbytes, sizeof(T))
+            sizeof(T) * new_len1 == nbytes || throw(ArgumentError("cannot reinterpret `$(S)` array with first axis of length $(len1) as `$(T)`"))
+            new_sz = (new_len1, Base.tail(sz)...)
+            UnsafeArray{T,N}(Ptr{T}(pointer(A)), new_sz)
+        end
+    else
+        UnsafeArray{T,N}(Ptr{T}(pointer(A)), size(A))
+    end
+end
