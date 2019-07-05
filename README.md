@@ -18,7 +18,7 @@ decent scalability. UnsafeArrays aims to provide such a solution.
 
 Example:
 
-```
+```julia
 using Base.Threads, LinearAlgebra
 
 function colnorms!(dest::AbstractVector, A::AbstractMatrix)
@@ -39,7 +39,7 @@ threads. Use the `@uviews` macro provided by UnsafeArrays to replace A with an
 `UnsafeArray` within the scope of the macro. An `UnsafeArray` is
 stack-allocated, and so are all views of it, e.g. within `colnorms!`:
 
-```
+```julia
 using UnsafeArrays
 
 @uviews A begin
