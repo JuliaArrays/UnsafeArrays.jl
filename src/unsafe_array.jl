@@ -68,15 +68,6 @@ Base.iscontiguous(::UnsafeArray) = true
 Base.iscontiguous(::Type{<:UnsafeArray}) = true
 
 
-Base.@propagate_inbounds Base.view(A::UnsafeArray) = Base.unsafe_view(A)
-
-Base.@propagate_inbounds function Base.view(A::UnsafeArray, idx, I...)
-    J = Base.to_indices(A, (idx, I...))
-    @boundscheck checkbounds(A, J...)
-    Base.unsafe_view(A, J...)
-end
-
-
 Base.@propagate_inbounds Base.unsafe_view(A::UnsafeArray{T,N}, I::Vararg{Base.ViewIndex,N}) where {T,N} =
     _unsafe_view_impl((), A, I...)
 
