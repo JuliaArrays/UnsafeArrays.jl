@@ -4,16 +4,25 @@
 [![codecov](https://codecov.io/gh/JuliaArrays/UnsafeArrays.jl/branch/master/graph/badge.svg)](https://codecov.io/gh/JuliaArrays/UnsafeArrays.jl)
 
 UnsafeArrays provides stack-allocated pointer-based array views for Julia.
-This package is mainly intended as a workaround for
-[Julia issue #14955 (non-allocating array views)](https://github.com/JuliaLang/julia/issues/14955).
 
-While the Julia compiler is able to elide heap-allocation of views in some
-cases, it cannot always do so. In some other cases, the relative cost of
-allocation and garbage collection of a even a large number of views is small.
-Especially in multi-threaded applications though, this cost can quickly become
-prohibitive and views must either be avoided (resulting in more lengthy and
-less readable code), or some form stack-allocated views must be used for
-decent scalability. UnsafeArrays aims to provide such a solution.
+This package is mainly intended as a workaround for
+[Julia issue #14955 (non-allocating array views)](https://github.com/JuliaLang/julia/issues/14955). This issue is solved in Julia v1.5 and higher.
+
+In Julia versions 1.4 and below, the Julia compiler is sometimes able to
+elide heap-allocation of views in some, but cannot always do so. If the view
+can't be elided, the relative cost of allocation and garbage collection of a
+views is usually still small, in single-threaded applications. But in
+in multi-threaded applications that use a large number of views, this cost can
+quickly become prohibitive and views must either be avoided (resulting in more
+lengthy and less readable code), or some form stack-allocated views must be
+used for decent scalability. UnsafeArrays provides such a solution.
+With Julia v1.5 and higher, using UnsafeArrays should not be necessary and is
+not likely to result in significant performance gains.
+
+Starting with v1.5, Julia can allocate immutable objects that contain
+heap references on the stack, making UnsafeArrays.jl largely unnecessary.
+It may still be useful as a lightweight wrapper for memory allocated outside
+of Julia's memory management.
 
 Example:
 
