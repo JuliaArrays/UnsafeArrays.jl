@@ -5,13 +5,19 @@ const IdxUnitRange = AbstractUnitRange{<:Integer}
 const DenseIdx = Union{IdxUnitRange,Integer}
 
 
+if isdefined(Base, :checked_length)
+    const unsafe_length = length
+    const unsafe_indices = axes
+else
+    using Base: unsafe_length, unsafe_indices
+end
 # Similar to Base._indices_sub:
 @inline _sub_axes() = ()
 @inline _sub_axes(::Real, I...) = _sub_axes(I...)
-@inline _sub_axes(i1::AbstractArray, I...) = (Base.unsafe_indices(i1)..., _sub_axes(I...)...)
+@inline _sub_axes(i1::AbstractArray, I...) = (unsafe_indices(i1)..., _sub_axes(I...)...)
 
 
-@inline _sub_size(sub_idxs...) = map(n->Int(Base.unsafe_length(n)), _sub_axes(sub_idxs...))
+@inline _sub_size(sub_idxs...) = map(n->Int(unsafe_length(n)), _sub_axes(sub_idxs...))
 
 
 function _require_one_based_indexing(A::AbstractArray{T,N}) where {T,N}
