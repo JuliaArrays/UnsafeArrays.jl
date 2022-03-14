@@ -1,8 +1,8 @@
 # UnsafeArrays.jl
 
 [![License](http://img.shields.io/badge/license-MIT-brightgreen.svg?style=flat)](LICENSE.md)
-[![Build Status](https://github.com/JuliaArrays/UnsafeArrays.jl/workflows/CI/badge.svg?branch=master)](https://github.com/JuliaArrays/UnsafeArrays.jl/actions?query=workflow%3ACI)
-[![Codecov](https://codecov.io/gh/JuliaArrays/UnsafeArrays.jl/branch/master/graph/badge.svg)](https://codecov.io/gh/JuliaArrays/UnsafeArrays.jl)
+[![Build Status](https://github.com/JuliaArrays/UnsafeArrays.jl/workflows/CI/badge.svg?branch=main)](https://github.com/JuliaArrays/UnsafeArrays.jl/actions?query=workflow%3ACI)
+[![Codecov](https://codecov.io/gh/JuliaArrays/UnsafeArrays.jl/branch/main/graph/badge.svg)](https://codecov.io/gh/JuliaArrays/UnsafeArrays.jl)
 
 UnsafeArrays provides stack-allocated pointer-based array views for Julia.
 
