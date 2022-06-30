@@ -148,7 +148,7 @@ end
 
 Base.deepcopy(A::UnsafeArray) = copyto!(similar(A), A)
 
-function Base.reinterpret(::Type{DST}, A::UnsafeArray{SRC, N}) where {DST, SRC, N}
+function Base.reinterpret(::Type{DST}, A::UnsafeArray{SRC}) where {DST, SRC}
     s1, s... = size(A)
     s1, rem = divrem(s1 * sizeof(SRC), sizeof(DST))
     @boundscheck if rem != zero(rem)
