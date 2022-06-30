@@ -148,6 +148,14 @@ end
 
 Base.deepcopy(A::UnsafeArray) = copyto!(similar(A), A)
 
+function Base.reinterpret(::Type{DST}, A::UnsafeArray{SRC, N}) where {DST, SRC, N}
+    s1, s... = size(A)
+    s1, rem = divrem(s1 * sizeof(SRC), sizeof(DST))
+    @boundscheck if rem != zero(rem)
+        throw(ArgumentError("Resulting array would have non-integral first dimension"))
+    end
+    UnsafeArray(convert(Ptr{DST}, pointer(A)), (s1, s...))
+end
 
 # # Defining Base.unaliascopy results in very bad broadcast performance for
 # # some reason, even when it shouldn't be called. By default, unaliascopy
