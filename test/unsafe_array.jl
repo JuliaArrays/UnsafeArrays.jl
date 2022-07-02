@@ -304,4 +304,21 @@ using Random
             @test convert(Array, UA) == A
         end
     end
+
+    @testset "reinterpret" begin
+        test_A_UA(Float32, Val(3)) do A, UA
+            @test reinterpret(UInt32, UA) == reinterpret(UInt32, A)
+            @test reinterpret(UInt8, UA) == reinterpret(UInt8, A)
+        end
+
+        # NOTE: this requires sz_max[1] to be divisible by 4
+        test_A_UA(UInt8, Val(3)) do A, UA
+            @test reinterpret(UInt32, UA) == reinterpret(UInt32, A)
+            @test reinterpret(Int8, UA) == reinterpret(Int8, A)
+        end
+
+        A = UInt32[ 1, 2, 3 ]
+        UA = UnsafeArray(pointer(A), size(A))
+        @test_throws ArgumentError reinterpret(UInt64, UA)
+    end
 end
