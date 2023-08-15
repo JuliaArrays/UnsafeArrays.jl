@@ -131,7 +131,7 @@ macro uviews(args...)
     binds = Expr(:block)
     for s in syms
         s isa Symbol || error("@uviews targets must be a symbols")
-        push!(binds.args, :($s = $uview($s)))
+        push!(binds.args, :($s = $UnsafeArrays.uview($s)))
     end
     let_expr = Expr(:let, binds, expr)
     esc(:(GC.@preserve $(syms...) $(let_expr)))
