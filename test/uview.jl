@@ -91,19 +91,27 @@ using Random
         A = rand(Int32, 8)
         B = rand(ComplexF64, 3, 5, 4)
 
-        uviews(() -> 42) == 42
-        uviews(A -> typeof(A), A) == UnsafeArray{Int32, 1}
-        uviews((A, B) -> (typeof(A), typeof(B)), A, B) == UnsafeArray{Int32, 1}
+        @test uviews(() -> 42) == 42
+        @test uviews(A -> typeof(A), A) == UnsafeArray{Int32, 1}
+        @test uviews((A, B) -> (typeof(A), typeof(B)), A, B) == (UnsafeArray{Int32, 1}, UnsafeArray{ComplexF64, 3})
     end
 
 
     @testset "@uviews" begin
+        @eval module TestMacroScope
+
+        # Test `@uviews` macro in a new module with minimal symbols imported from `UnsafeArrays`
+        using UnsafeArrays: UnsafeArray, @uviews
+        using Test
+
         A = rand(Int32, 8)
         B = rand(ComplexF64, 3, 5, 4)
 
-        @uviews(42) == 42
-        @uviews(A, typeof(A)) == UnsafeArray{Int32, 1}
-        @uviews(A, B, (typeof(A), typeof(B))) == UnsafeArray{Int32, 1}
+        @test @uviews(42) == 42
+        @test @uviews(A, typeof(A)) == UnsafeArray{Int32, 1}
+        @test @uviews(A, B, (typeof(A), typeof(B))) == (UnsafeArray{Int32, 1}, UnsafeArray{ComplexF64, 3})
+
+        end # module TestMacroScope
     end
 
 
