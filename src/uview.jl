@@ -154,6 +154,7 @@ function Base.mightalias(A::UnsafeArray, B::AbstractArray)
         if typeof(B) <: UnsafeArray
             Base.mightalias(A, B)
         else
+            # Don't know if A and B might alias:
             false
         end
     end
@@ -161,7 +162,13 @@ end
 
 Base.mightalias(A::AbstractArray, B::UnsafeArray) = Base.mightalias(B, A)
 
+# Need to specialize mightalias SubArrays of UnsafeArrays since the
+# default mightalias implementation returns false for all isbits types:
+
 Base.mightalias(A::SubArray{T,N,<:UnsafeArray}, B::AbstractArray) where {T,N} =
+    Base.mightalias(parent(A), B)
+
+Base.mightalias(A::SubArray{T,N,<:UnsafeArray}, B::SubArray) where {T,N} =
     Base.mightalias(parent(A), B)
 
 Base.mightalias(A::SubArray{T1,N1,<:UnsafeArray}, B::SubArray{T2,N2,<:UnsafeArray}) where {T1,N1,T2,N2} =
@@ -171,6 +178,9 @@ Base.mightalias(A::SubArray{T,N,<:UnsafeArray}, B::UnsafeArray) where {T,N} =
     Base.mightalias(parent(A), B)
 
 Base.mightalias(A::AbstractArray, B::SubArray{T,N,<:UnsafeArray}) where {T,N} =
+    Base.mightalias(B, A)
+
+Base.mightalias(A::SubArray, B::SubArray{T,N,<:UnsafeArray}) where {T,N} =
     Base.mightalias(B, A)
 
 Base.mightalias(A::UnsafeArray, B::SubArray{T,N,<:UnsafeArray}) where {T,N} =
