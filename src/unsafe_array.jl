@@ -87,12 +87,20 @@ Base.@propagate_inbounds _unsafe_view_impl(IFwd::NTuple{M,Base.ViewIndex}, A::Un
     _unsafe_view_impl((IFwd..., i), A, I...)
 
 @inline function _unsafe_view_impl(IFwd::NTuple{M,Base.Slice}, A::UnsafeArray{T,N}, i::DenseIdx, I::Integer...) where {T,M,N}
+    ax_A = axes(A)
     @assert IFwd == ntuple(i -> axes(A)[i], Val{M}())
     I_all = (IFwd..., i, I...)
     @boundscheck checkbounds(A, I_all...)
     startidxs = map(first, (IFwd..., i, I...))
+    firstidxs = map(first, ax_A)
     sub_s = _sub_size(I_all...)
-    p = pointer(A, LinearIndices(size(A))[startidxs...])
+    A_isempty = length(A) == 0
+    view_isempty = prod(sub_s) == 0
+    # getindex on LinearIndices fails with startidxs if A is empty, so use pseudo-size in that case:
+    sz = size(A)
+    pseudo_sz = ntuple(_ -> 1, Val(N))
+    mod_size, mod_startidxs = ifelse(A_isempty && view_isempty, (pseudo_sz, firstidxs), (sz, startidxs))
+    p = pointer(A, LinearIndices(mod_size)[mod_startidxs...])
     UnsafeArray(p, sub_s)
 end
 

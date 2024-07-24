@@ -34,6 +34,13 @@ using Random
     end
 
 
+    function test_empty_A_UA(test_code::Function, ::Type{T}, Val_N::Val{N}) where {T, N}
+        A = rand(T, 0, fill(4, N-1)...)
+        UA = UnsafeArray(pointer(A), size(A))
+        UnsafeArrays.@gc_preserve A test_code(A, UA)
+    end
+
+
     @testset "ctors" begin
         test_A(Float64, Val(0)) do A
             ptr = pointer(A)
@@ -145,6 +152,11 @@ using Random
             @test isbits(view(UA, :)) == true
             @test isbits(view(UA, :, :, :)) == true
             @test isbits(view(UA, :, 3, :)) == true
+        end
+
+        test_empty_A_UA(Float32, Val(2)) do A, UA
+            @test @inferred(view(UA, :, 2:3)) isa UnsafeArray
+            @test size(@inferred(view(UA, :, 2:3))) == (0, 2)
         end
     end
 
