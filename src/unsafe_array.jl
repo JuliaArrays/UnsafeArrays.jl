@@ -60,7 +60,8 @@ end
     unsafe_store!(A.pointer, x, i)
 end
 
-@inline Base.IndexStyle(A::UnsafeArray) = IndexLinear()
+@inline Base.IndexStyle(A::UnsafeArray) = Base.IndexStyle(typeof(A))
+Base.IndexStyle(::Type{UnsafeArray{T,N}}) where {T,N} = IndexLinear()
 
 Base.unsafe_convert(::Type{Ptr{T}}, A::UnsafeArray{T}) where T = A.pointer
 
