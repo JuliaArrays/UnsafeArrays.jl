@@ -67,6 +67,7 @@ using Random
             T = eltype(UA)
             @test @inferred(length(UA)) == length(A)
             @test @inferred(IndexStyle(UA)) == IndexLinear()
+            @test @inferred(IndexStyle(typeof(UA))) == IndexLinear()
             @test @inferred(LinearIndices(UA)) == LinearIndices(A)
             @test @inferred(eachindex(UA)) == eachindex(A)
 
