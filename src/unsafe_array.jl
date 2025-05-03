@@ -170,6 +170,23 @@ function Base.reinterpret(::Type{DST}, A::UnsafeArray{SRC}) where {DST, SRC}
     end
 end
 
+function Base.reinterpret(::typeof(reshape), ::Type{DST}, A::UnsafeArray{SRC}) where {DST, SRC}
+    if sizeof(DST) > sizeof(SRC)
+        @boundscheck if size(A, 1) * sizeof(SRC) != sizeof(DST)
+            throw(ArgumentError("Cannot reinterpret: first dimension × sizeof(SRC) must exactly match sizeof(DST). Got: size(A, 1) = $(size(A, 1)), sizeof(SRC) = $(sizeof(SRC)), sizeof(DST) = $(sizeof(DST))"))
+        end
+        UnsafeArray(convert(Ptr{DST}, pointer(A)), Base.tail(size(A)))
+    elseif sizeof(DST) < sizeof(SRC)
+        @boundscheck if sizeof(DST) == 0 || rem(sizeof(SRC), sizeof(DST)) != 0
+            throw(ArgumentError("Cannot reinterpret: sizeof(SRC) must be a multiple of sizeof(DST). Got: sizeof(SRC) = $(sizeof(SRC)), sizeof(DST) = $(sizeof(DST))"))
+        end
+        sz1 = div(sizeof(SRC), sizeof(DST))
+        UnsafeArray(convert(Ptr{DST}, pointer(A)), (sz1, size(A)...))
+    else
+        UnsafeArray(convert(Ptr{DST}, pointer(A)), size(A))
+    end
+end
+
 # # Defining Base.unaliascopy results in very bad broadcast performance for
 # # some reason, even when it shouldn't be called. By default, unaliascopy
 # # results in an error for UnsafeArray.
