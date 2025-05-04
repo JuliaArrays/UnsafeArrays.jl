@@ -323,9 +323,15 @@ using Random
             @test reinterpret(UInt32, UA) == reinterpret(UInt32, A)
             @test reinterpret(UInt8, UA) == reinterpret(UInt8, A)
 
-            @test reinterpret(reshape, UInt8, UA) == reinterpret(reshape, UInt8, A)
-            @test reinterpret(reshape, UInt32, UA) == reinterpret(reshape, UInt32, A)
-            @test reinterpret(reshape, NTuple{8, Float32}, UA) == reinterpret(reshape, NTuple{8, Float32}, A)
+            if VERSION >= v"1.6" # reinterpret(reshape, ...) requires at least Julia 1.6
+                @test reinterpret(reshape, UInt8, UA) == reinterpret(reshape, UInt8, A)
+                @test reinterpret(reshape, UInt32, UA) == reinterpret(reshape, UInt32, A)
+                @test reinterpret(reshape, NTuple{8, Float32}, UA) == reinterpret(reshape, NTuple{8, Float32}, A)
+            else # testing the alternative
+                @test reinterpret(reshape, UInt8, UA) == reshape(reinterpret(UInt8, A), (4, 8, 7, 5))
+                @test reinterpret(reshape, UInt32, UA) == reinterpret(UInt32, A)
+                @test reinterpret(reshape, NTuple{8, Float32}, UA) == reshape(reinterpret(NTuple{8, Float32}, A), (7, 5))
+            end
 
             @test_throws ArgumentError reinterpret(reshape, NTuple{5, Float32}, UA)
             @test_throws ArgumentError reinterpret(reshape, Nothing, UA)
