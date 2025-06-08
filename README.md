@@ -13,7 +13,7 @@ In Julia versions 1.4 and below, the Julia compiler is sometimes able to
 elide heap-allocation of views in some, but cannot always do so. If the view
 can't be elided, the relative cost of allocation and garbage collection of a
 views is usually still small, in single-threaded applications. But in
-in multi-threaded applications that use a large number of views, this cost can
+multi-threaded applications that use a large number of views, this cost can
 quickly become prohibitive and views must either be avoided (resulting in more
 lengthy and less readable code), or some form stack-allocated views must be
 used for decent scalability. UnsafeArrays provides such a solution.
