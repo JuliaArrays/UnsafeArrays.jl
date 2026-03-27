@@ -48,6 +48,8 @@ UnsafeArray(pointer::Ptr{T}, size::NTuple{N,Int}) where {T,N} =
 
 Base.size(A::UnsafeArray) = A.size
 
+Base.sizeof(A::UnsafeArray{T, N}) where {T, N} = sizeof(T) * foldl(*, size(A))
+
 Base.elsize(::Type{UnsafeArray{T, N}}) where {T, N} = sizeof(T)
 
 @inline function Base.getindex(A::UnsafeArray, i::Integer)
