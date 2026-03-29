@@ -66,6 +66,8 @@ using Random
         run_test(T::Type, Val_N::Val) = test_A_UA(T, Val_N) do A, UA
             T = eltype(UA)
             @test @inferred(length(UA)) == length(A)
+            @test @inferred(size(UA)) == size(A)
+            @test @inferred(sizeof(UA)) == sizeof(A)
             @test @inferred(IndexStyle(UA)) == IndexLinear()
             @test @inferred(IndexStyle(typeof(UA))) == IndexLinear()
             @test @inferred(LinearIndices(UA)) == LinearIndices(A)
@@ -158,6 +160,8 @@ using Random
         test_empty_A_UA(Float32, Val(2)) do A, UA
             @test @inferred(view(UA, :, 2:3)) isa UnsafeArray
             @test size(@inferred(view(UA, :, 2:3))) == (0, 2)
+            @test @inferred(sizeof(UA)) == sizeof(A)
+            @test @inferred(sizeof(view(UA, :, 2:3))) == 0
         end
     end
 

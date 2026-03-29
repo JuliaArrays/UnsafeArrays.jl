@@ -50,6 +50,8 @@ Base.size(A::UnsafeArray) = A.size
 
 Base.elsize(::Type{UnsafeArray{T, N}}) where {T, N} = sizeof(T)
 
+Base.sizeof(A::UnsafeArray{T}) where T = sizeof(T) * length(A)
+
 @inline function Base.getindex(A::UnsafeArray, i::Integer)
     @boundscheck checkbounds(A, i)
     unsafe_load(A.pointer, i)
